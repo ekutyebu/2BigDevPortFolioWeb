@@ -75,12 +75,10 @@ async function main() {
     { title: "Bloosom Tech", description: "Modern brand website with clean responsive design", image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1000", tags: ["React", "Next.js", "Tailwind"], link: "https://bloosom-tech.vercel.app", order: 5 },
     { title: "TechX Sentiment Project", description: "Sentiment analysis engine using Python and TextBlob for classification", image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=1000", tags: ["Python", "TextBlob", "NLP"], link: "https://github.com/ekutyebu/techx-sentiment-project", order: 6 }
   ];
+  // --- RE-SEED PROJECTS ---
+  await prisma.project.deleteMany({});
   for (const p of projects) {
-    await prisma.project.upsert({
-      where: { title: p.title },
-      update: p,
-      create: p
-    });
+    await prisma.project.create({ data: p });
   }
 
   console.log('🏁 DATABASE SYNC COMPLETE!');
