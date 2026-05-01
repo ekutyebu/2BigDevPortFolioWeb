@@ -1,0 +1,135 @@
+---
+title: "Handling State in Modern React Applications"
+date: "2026-05-01"
+author: "Ekuty Barnabas Ebu"
+authorImage: "/images/avatar.jpg"
+coverImage: "/images/blog/react-state-cover.jpg"
+excerpt: "Stop over-engineering with Redux. Learn the modern state management matrix: when to use Zustand, React Query, or simple Context."
+tags: ["React", "State Management", "Zustand", "React Query"]
+readingTime: 14
+---
+
+## 🧠 Quick Summary (2-3 sentences)
+
+The days of monolithic state management are over. In 2026, the key to a maintainable React app is splitting state into four distinct categories: Local, Global UI, Server Cache, and URL state. This post provides the definitive guide on choosing the right tool for each category without bloating your bundle.
+
+---
+
+## 🔴 What Most People Get Wrong
+
+Most developers reach for a "Global State Store" (like Redux) for everything. They store user profiles, form inputs, and even "isOpen" modal states in one massive object. 
+
+This is a performance disaster. **90% of what you think is "Global State" is actually just "Server Cache."** If you use a tool like React Query for your data fetching, you can delete 80% of your Redux/Zustand code instantly.
+
+### 📊 State Management Decision Matrix
+
+| State Type | Example | Best Tool | Why? |
+|------------|---------|-----------|------|
+| **Local UI** | Is dropdown open? | `useState` | Simple, fast, isolated. |
+| **Complex Form** | Multi-step checkout | `useReducer` | Handles complex logic without external deps. |
+| **Server Cache** | User profile, Feed | **React Query** | Handles refetching, caching, and stale-while-revalidate. |
+| **Global UI** | Theme (Dark/Light) | **Zustand** | Lightweight, no boilerplate, easy to test. |
+| **URL State** | Page filters, Search | `useSearchParams` | Deep-linkable and survives page refreshes. |
+
+---
+
+## 🟢 Deep Dive
+
+### 🚀 1. The Rise of Zustand
+Redux has its place in massive enterprises, but for 99% of apps, **Zustand** is the winner. It has zero "Providers" (no more wrapper hell), a tiny footprint, and a simple hooks-based API.
+
+### 🔄 2. Treat your API as a Cache, not a Store
+Stop putting your `useEffect` fetch results into your global store. Tools like **TanStack Query** (React Query) manage the lifecycle of your server data so you don't have to.
+
+### 🔗 3. The URL is your Source of Truth
+If a user filters a list and clicks "Share," the recipient should see the same filters. Storing these in a state variable instead of the URL is a common junior mistake.
+
+---
+
+## ✅ Step-by-Step Implementation
+
+### Step 1: Implement a Global UI Store (Zustand)
+Don't use Context for things that change frequently. Use Zustand for better performance.
+
+```bash
+# Install Zustand
+npm install zustand
+```
+
+```typescript
+// store/useThemeStore.ts
+import { create } from 'zustand';
+
+interface ThemeState {
+  isDarkMode: boolean;
+  toggleTheme: () => void;
+}
+
+export const useThemeStore = create<ThemeState>((set) => ({
+  isDarkMode: false,
+  toggleTheme: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
+}));
+```
+
+### Step 2: Implement Server State (React Query)
+Let the library handle the loading, error, and caching states for you.
+
+```bash
+# Install TanStack Query
+npm install @tanstack/react-query
+```
+
+```tsx
+// hooks/useUser.ts
+import { useQuery } from '@tanstack/react-query';
+
+export const useUser = (id: string) => {
+  return useQuery({
+    queryKey: ['user', id],
+    queryFn: () => fetch(`/api/users/${id}`).then(res => res.json()),
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+};
+```
+
+### Step 3: Use URL Params for Filters
+Always make your UI states shareable via the URL.
+
+```tsx
+// components/SearchFilter.tsx
+import { useRouter, useSearchParams } from 'next/navigation';
+
+export const SearchFilter = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const handleSearch = (term: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('q', term);
+    router.push(`?${params.toString()}`);
+  };
+
+  return <input onChange={(e) => handleSearch(e.target.value)} />;
+};
+```
+
+---
+
+## 📊 The 80/20 Rule / Quick Wins
+
+The 80% of state management bugs can be fixed by **keeping state as local as possible**. Before you move a variable to a store or context, ask: "Does any other component actually need this?" If not, keep it in `useState`.
+
+---
+
+## 📚 Resources for Further Reading
+
+| Library | Purpose |
+|---------|---------|
+| [Zustand Docs](https://docs.pmnd.rs/zustand) | Lightweight global state |
+| [TanStack Query](https://tanstack.com/query) | The standard for server state |
+| [Jotai](https://jotai.org) | Atomic state for complex UIs |
+
+---
+
+## 🎯 Your Action Item
+Audit your app today. Identify one piece of "Server Data" that you are manually storing in a global store and migrate it to **React Query**. You'll likely delete 20-30 lines of boilerplate code in the process.

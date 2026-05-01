@@ -1,0 +1,98 @@
+---
+title: "Cybersecurity for Startups: A Non-Paranoid Guide"
+date: "2026-05-01"
+author: "Ekuty Barnabas Ebu"
+authorImage: "/images/avatar.jpg"
+excerpt: "You don't need a $1M security budget to stay safe. Learn the 20% of actions that prevent 80% of startup data breaches."
+tags: ["Security", "Startup", "Cybersecurity", "Best Practices"]
+readingTime: 11
+---
+
+## 🛡️ Quick Summary (2-3 sentences)
+
+For a startup, security isn't about being unhackable; it's about being an "expensive target." Attackers look for easy wins. This post outlines a pragmatic, low-cost security framework that protects your company from 99% of automated attacks without slowing down your product development.
+
+---
+
+## 🔴 What Most People Get Wrong
+
+Most startup founders think security is a "feature" they can add later. They focus on complex encryption and AI-threat detection while their employees are using the same password for Slack, Email, and GitHub. 
+
+**The truth?** 80% of startup breaches happen via **Social Engineering and Poor Password Hygiene**, not sophisticated zero-day exploits. You don't need a firewall; you need **MFA (Multi-Factor Authentication)** and a **Password Manager**.
+
+### 📊 The Startup Security ROI
+
+| Action | Cost | Effort | Protection Level |
+|--------|------|--------|------------------|
+| **Enforce MFA Everywhere** | $0 | Low | ✅ **Critical** |
+| **Password Manager (1Password)** | $5/mo | Low | ✅ **Critical** |
+| **Dependency Scanning (Snyk)** | Free tier | Medium | ✅ High |
+| **Penetration Testing** | $5k - $20k | High | ✅ Medium (Early stage) |
+| **Custom Encryption** | $$$ | Very High | ❌ Low (Don't roll your own) |
+
+---
+
+## 🟢 Deep Dive
+
+### 🚀 1. MFA is Non-Negotiable
+If you don't have MFA enabled on your Email, GitHub, and Cloud providers (AWS/Vercel), you are effectively leaving your front door unlocked. A stolen password should never be enough to compromise your company.
+
+### 🧠 2. Automate Dependency Checks
+Startups move fast and install dozens of NPM packages. 1 in 10 packages has a known security vulnerability. Tools like **Snyk** or **GitHub Dependabot** will automatically scan your code and tell you which packages to update before an attacker exploits them.
+
+### 🛡️ 3. Secret Management
+Never, ever commit a `.env` file to GitHub. Use a secret manager (like Vercel Secrets or Infisical) to inject your API keys at runtime. I recommend searching your repo today for `STRIPE_KEY` or `DATABASE_URL`—if it's in your Git history, it's already compromised.
+
+---
+
+## ✅ Step-by-Step Implementation
+
+### Step 1: Scan for Secrets in Git History
+Check if you've already leaked something.
+
+```bash
+# Install and run truffleHog to find leaked secrets
+docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/your-repo
+```
+
+### Step 2: Implement MFA Enforcement logic
+If you have an admin panel, ensure only MFA-verified users can access it.
+
+```javascript
+// middleware.js
+export function middleware(req) {
+  const user = getSession(req);
+  if (user.role === 'ADMIN' && !user.isMfaVerified) {
+    return NextResponse.redirect('/mfa-setup');
+  }
+}
+```
+
+### Step 3: Audit your NPM packages
+Run this every Monday.
+
+```bash
+# Check for known vulnerabilities in your dependencies
+npm audit fix
+```
+
+---
+
+## 📊 The 80/20 Rule / Quick Wins
+
+The 80% of your security wins comes from **Least Privilege**. Only give employees access to the specific tools they need to do their job. Your marketing intern doesn't need access to the production database. By limiting access, you limit the "Blast Radius" of a single stolen account.
+
+---
+
+## 📚 Resources for Further Reading
+
+| Resource | Purpose |
+|----------|---------|
+| [Startup Security Checklist](https://startupsecurity.org/) | A comprehensive to-do list |
+| [Snyk.io](https://snyk.io/) | Automated code & container security |
+| [Have I Been Pwned](https://haveibeenpwned.com/) | Checking for employee credential leaks |
+
+---
+
+## 🎯 Your Action Item
+Enable **MFA (Multi-Factor Authentication)** on your GitHub and Vercel accounts today. If you are using SMS-based MFA, switch to an **Authenticator App (Google/Authy)** for 10x better security against SIM-swapping.

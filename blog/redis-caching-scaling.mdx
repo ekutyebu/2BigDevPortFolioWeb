@@ -1,0 +1,118 @@
+---
+title: "How to Handle 1 Million Users with Redis Caching"
+date: "2026-05-01"
+author: "Ekuty Barnabas Ebu"
+authorImage: "/images/avatar.jpg"
+coverImage: "/images/blog/redis-caching-cover.jpg"
+excerpt: "Your database is the bottleneck. Learn how Redis can handle 100k requests per second and keep your app fast under extreme load."
+tags: ["Redis", "Backend", "Scaling", "Performance"]
+readingTime: 16
+---
+
+## 🚀 Quick Summary (2-3 sentences)
+
+Scaling to 1 million users isn't about buying a bigger server; it's about protecting your database from redundant work. This post explores how **Redis** acts as a high-speed memory layer, handling 100,000+ operations per second with sub-millisecond latency, and the specific "Cache-Aside" patterns you need to avoid the dreaded "Cache Stampede."
+
+---
+
+## 🔴 What Most People Get Wrong
+
+Most developers treat the cache as a "secondary database." They store data in Redis and forget to set an **Expiration (TTL)**. 
+
+**The result?** Your cache fills up with "stale" data (data that has changed in the real database but hasn't updated in the cache). Users see old prices, deleted comments, or wrong inventory. A cache without a TTL isn't a cache; it's just a poorly managed database.
+
+### 📊 Database vs. Redis: The Performance Gap
+
+| Operation | PostgreSQL (Disk-based) | Redis (In-Memory) | Improvement |
+|-----------|-------------------------|-------------------|-------------|
+| **Latency** | 5ms - 50ms | **<1ms** | **50x Faster** |
+| **Throughput** | 1k - 5k req/s | **100k+ req/s** | **100x More** |
+| **Complexity** | High (Joins/Indexes) | Low (Key-Value) | Simpler Ops |
+| **Cost** | Expensive (IOPS) | Cheap (RAM) | Lower Bills |
+
+---
+
+## 🟢 Deep Dive
+
+### 🚀 1. The "Cache-Aside" Pattern
+This is the standard for 99% of web apps:
+1. Application receives a request.
+2. Check **Redis**. If data exists (Cache Hit), return it.
+3. If not (Cache Miss), fetch from **PostgreSQL**.
+4. Store the result in Redis with a TTL (e.g., 60 seconds).
+5. Return the data.
+
+### 🧠 2. Preventing "Cache Stampedes"
+What happens if the cache expires and 10,000 users all hit the "Miss" logic at the same time? Your database will crash. I recommend using **Distributed Locking** or "Early Expiration" to ensure only one process rebuilds the cache while the others wait for 50ms.
+
+### 🛡️ 3. Redis as a Rate Limiter
+Don't just use Redis for data. Use it to protect your API. You can track how many requests a user makes in a window (e.g., "60 requests per minute") with a single Redis command (`INCR`).
+
+---
+
+## ✅ Step-by-Step Implementation
+
+### Step 1: Set up the Redis Client
+We'll use `ioredis`, the most robust client for Node.js.
+
+```bash
+# Install the Redis client
+npm install ioredis
+```
+
+### Step 2: Implement the Cache-Aside Function
+Here is a production-ready wrapper for your database calls.
+
+```javascript
+// lib/cache.ts
+import Redis from 'ioredis';
+const redis = new Redis(process.env.REDIS_URL);
+
+export async function getCachedData(key: string, fetchFn: () => Promise<any>) {
+  // 1. Try to get from Redis
+  const cached = await redis.get(key);
+  if (cached) return JSON.parse(cached);
+
+  // 2. If miss, run the real DB function
+  const data = await fetchFn();
+
+  // 3. Store in Redis for 10 minutes (600 seconds)
+  await redis.set(key, JSON.stringify(data), 'EX', 600);
+
+  return data;
+}
+```
+
+### Step 3: Implement Rate Limiting
+Prevent API abuse with this simple middleware logic.
+
+```javascript
+const count = await redis.incr(`rate_limit:${userIp}`);
+if (count === 1) {
+  await redis.expire(`rate_limit:${userIp}`, 60); // Reset every minute
+}
+if (count > 100) {
+  throw new Error("Too many requests");
+}
+```
+
+---
+
+## 📊 The 80/20 Rule / Quick Wins
+
+The 80% of your scaling problems can be solved by **Caching your User Session and your Home Page data**. These are the most frequently accessed parts of any app. By moving just these two things to Redis, you can often handle 10x more traffic on the same hardware.
+
+---
+
+## 📚 Resources for Further Reading
+
+| Resource | Purpose |
+|----------|---------|
+| [Redis University](https://university.redis.com/) | Free courses on high-performance data |
+| [ByteByteGo: Caching](https://bytebytego.com/) | System design diagrams for scaling |
+| [Upstash](https://upstash.com/) | Serverless Redis (Great for Next.js/Vercel) |
+
+---
+
+## 🎯 Your Action Item
+Identity your slowest API endpoint today (use `console.time`). If it takes more than 200ms, wrap it in the **Cache-Aside pattern** with a 60-second TTL. Watch the response time drop to 2ms.

@@ -85,8 +85,18 @@ export default async function BlogPostPage({ params }: PageProps) {
         </div>
 
         <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-outfit prose-p:text-muted prose-p:leading-relaxed">
-          {/* Content would normally be rendered as MDX or HTML */}
-          <div dangerouslySetInnerHTML={{ __html: post.content }} />
+          {/* Render content - Supporting basic Markdown structure */}
+          <div className="whitespace-pre-wrap break-words">
+            {post.content.split('\n').map((line: string, i: number) => {
+              if (line.startsWith('## ')) return <h2 key={i} className="text-3xl font-bold mt-12 mb-6">{line.replace('## ', '')}</h2>;
+              if (line.startsWith('### ')) return <h3 key={i} className="text-2xl font-bold mt-8 mb-4">{line.replace('### ', '')}</h3>;
+              if (line.startsWith('---')) return <hr key={i} className="my-12 border-white/10" />;
+              if (line.startsWith('- ')) return <li key={i} className="ml-6 mb-2">{line.replace('- ', '')}</li>;
+              if (line.startsWith('|')) return <div key={i} className="font-mono text-sm bg-white/5 p-4 rounded-xl my-4 overflow-x-auto">{line}</div>;
+              if (line.startsWith('```')) return null; // Simple skip for block markers for now
+              return <p key={i} className="mb-4">{line}</p>;
+            })}
+          </div>
         </div>
 
         <div className="mt-16 pt-8 border-t border-gray-200 dark:border-white/5">

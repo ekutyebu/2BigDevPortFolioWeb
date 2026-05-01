@@ -1,0 +1,116 @@
+---
+title: "Why Your Images are Slowing Down Your Lighthouse Score"
+date: "2026-05-01"
+author: "Ekuty Barnabas Ebu"
+authorImage: "/images/avatar.jpg"
+coverImage: "/images/blog/image-optimization-cover.jpg"
+excerpt: "Images account for 60% of the average web page's weight. Learn the 3 simple steps to cut your image size by 80% without losing quality."
+tags: ["Web Performance", "Lighthouse", "Next.js", "Images"]
+readingTime: 10
+---
+
+## 🖼️ Quick Summary (2-3 sentences)
+
+Large, unoptimized images are the single biggest killer of web performance and SEO rankings. In 2026, serving a raw 2MB JPEG is an engineering sin. This post outlines the modern workflow for automated image optimization, from modern file formats to smart lazy-loading strategies.
+
+---
+
+## 🔴 What Most People Get Wrong
+
+Most developers think that using `img src="my-photo.jpg"` is fine as long as they set a width and height. 
+
+**The reality?** You are forcing the user's browser to download a massive file even if they are on a small mobile screen. The browser still has to decode that 2000px image just to display it in a 300px box. This spikes your **LCP (Largest Contentful Paint)** and destroys your Lighthouse score.
+
+### 📊 Image Format Showdown: 2026
+
+| Format | Compression Style | File Size (1080p) | Browser Support | Recommendation |
+|--------|-------------------|-------------------|-----------------|----------------|
+| **JPEG** | Lossy (Old) | 850 KB | 100% | Legacy only |
+| **WebP** | Lossy/Lossless | 250 KB | 98% | The standard |
+| **AVIF** | **Next-Gen** | **120 KB** | 94% | **Best for Hero images** |
+| **SVG** | Vector | < 10 KB | 100% | Icons & Logos only |
+
+---
+
+## 🟢 Deep Dive
+
+### 🚀 1. The Power of Next.js `next/image`
+If you are using Next.js, you have no excuse for slow images. The `<Image />` component automatically:
+- Converts your images to **WebP/AVIF** on the fly.
+- Creates **responsive sizes** so mobile users get small files.
+- Implements **lazy loading** so images only download when they enter the viewport.
+
+### 🎨 2. Content-Type Matters
+I've seen projects where developers renamed `.png` to `.webp` manually. This doesn't work! You must use a tool like **Sharp** or a CDN (Cloudinary/Vercel) to actually re-encode the data.
+
+### 🧠 3. Blur-up Placeholders
+The "Wrong Way" is a white box while the image loads. The "Right Way" is a 10px blurred version of the image that appears instantly, giving the user a sense of progress.
+
+---
+
+## ✅ Step-by-Step Implementation
+
+### Step 1: Optimize your Next.js config
+Enable AVIF for the best compression currently available.
+
+```javascript
+// next.config.mjs
+const nextConfig = {
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'images.unsplash.com' }
+    ],
+  },
+};
+export default nextConfig;
+```
+
+### Step 2: Use the Image Component Correctly
+Always provide a placeholder to prevent Layout Shift (CLS).
+
+```tsx
+import Image from 'next/image';
+
+export const Hero = () => (
+  <Image
+    src="/hero.jpg"
+    alt="Stunning Hero Image"
+    width={1200}
+    height={600}
+    priority // Tell Next.js to load this FIRST
+    placeholder="blur"
+    blurDataURL="data:image/jpeg;base64,..." // High-speed placeholder
+    className="rounded-xl shadow-lg"
+  />
+);
+```
+
+### Step 3: Audit your site
+Run this command to see which images are currently hurting you.
+
+```bash
+# Run Lighthouse audit on your local dev server
+npx lighthouse http://localhost:3000 --only-categories=performance --view
+```
+
+---
+
+## 📊 The 80/20 Rule / Quick Wins
+
+The 80% of your performance gain comes from **Setting explicit Width and Height**. This doesn't just help with loading; it tells the browser exactly how much space to reserve, which fixes your **Cumulative Layout Shift (CLS)**—a major factor in Google's ranking algorithm.
+
+---
+
+## 📚 Resources for Further Reading
+
+| Resource | Purpose |
+|----------|---------|
+| [Next.js Image Docs](https://nextjs.org/docs/app/building-your-application/optimizing/images) | Best practices for React |
+| [Squoosh.app](https://squoosh.app/) | Manual image optimization by Google |
+| [Sharp Library](https://sharp.pixelplumbing.com/) | High-performance Node.js image processing |
+
+---
+
+## 🎯 Your Action Item
+Go to your landing page today. Identify your largest image and wrap it in the **Next.js `<Image />` component with `priority` enabled.** You will likely see your Lighthouse performance score jump by 10 points instantly.

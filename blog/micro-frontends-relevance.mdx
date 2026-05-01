@@ -1,0 +1,126 @@
+---
+title: "Micro-Frontends: Are They Still Relevant?"
+date: "2026-05-01"
+author: "Ekuty Barnabas Ebu"
+authorImage: "/images/avatar.jpg"
+coverImage: "/images/blog/micro-frontends-cover.jpg"
+excerpt: "Is the complexity of Micro-Frontends worth it in 2026? Learn why Module Federation is the only way to scale for teams over 100."
+tags: ["Micro-Frontends", "Architecture", "Module Federation", "Web Development"]
+readingTime: 14
+---
+
+## 🏗️ Quick Summary (2-3 sentences)
+
+Micro-frontends were the hottest trend of 2021, but the complexity they introduced led many teams to regret the decision. In 2026, the question isn't whether they are "relevant," but whether you have the **organizational problem** that they are designed to solve. This post explores when to jump in and when to stay in a "Modular Monolith."
+
+---
+
+## 🔴 What Most People Get Wrong
+
+Most developers think Micro-frontends are a **Technical Strategy** to make apps faster. They aren't. In fact, they usually make apps *slower* due to redundant library downloads. 
+
+**Micro-frontends are an Organizational Strategy.** They exist so that Team A can deploy the "Checkout" page without needing to talk to Team B who is working on the "Search" page. If you are a team of 10 people, Micro-frontends will only slow you down.
+
+### 📊 Monolith vs. Micro-Frontend: 2026
+
+| Metric | Modular Monolith (Next.js) | Micro-Frontends (Module Fed) | Winner |
+|--------|----------------------------|-------------------------------|--------|
+| **Development Speed** | ✅ Fast (Local environment) | ❌ Slow (Cross-app deps) | Monolith |
+| **Deployment Independence** | ❌ None (All or nothing) | ✅ Absolute (Per team) | Micro-Frontends |
+| **User Performance** | ✅ Best (Shared bundles) | ❌ Poor (Redundant JS) | Monolith |
+| **Team Autonomy** | ❌ Shared everything | ✅ Isolated stacks | Micro-Frontends |
+| **Ideal Team Size** | 1 - 30 developers | **100+ developers** | Varies |
+
+---
+
+## 🟢 Deep Dive
+
+### 🚀 1. The Rise of Module Federation
+The "Wrong Way" to do Micro-frontends is using iframes or custom script loading. The "Right Way" in 2026 is **Webpack/Rspack Module Federation**. It allows apps to share code at runtime dynamically while keeping their builds separate.
+
+### 🧠 2. The Shared State Nightmare
+The biggest challenge of Micro-frontends is sharing state (like the User Session) between isolated apps. I recommend using the **Custom Events API** or a lightweight "Event Bus" rather than trying to share a single Zustand or Redux store.
+
+### 🛡️ 3. Design System Consistency
+If Team A uses Tailwind 3 and Team B uses Tailwind 4, your site will look like a Frankenstein monster. A successful Micro-frontend strategy requires a **Universal Design System** that all teams must consume.
+
+---
+
+## ✅ Step-by-Step Implementation
+
+### Step 1: Configure Module Federation (The Shell)
+This is the "Host" app that will pull in components from other teams.
+
+```javascript
+// rsbuild.config.ts (Host App)
+import { defineConfig } from '@rsbuild/core';
+import { pluginModuleFederation } from '@module-federation/rsbuild-plugin';
+
+export default defineConfig({
+  plugins: [
+    pluginModuleFederation({
+      name: 'shell',
+      remotes: {
+        checkout: 'checkout@http://localhost:3001/mf-manifest.json',
+      },
+    }),
+  ],
+});
+```
+
+### Step 2: Expose a Component (The Remote)
+This is the "Checkout" team's app.
+
+```javascript
+// rsbuild.config.ts (Checkout App)
+export default defineConfig({
+  plugins: [
+    pluginModuleFederation({
+      name: 'checkout',
+      exposes: {
+        './OrderSummary': './src/components/OrderSummary.tsx',
+      },
+    }),
+  ],
+});
+```
+
+### Step 3: Consume the Remote Component
+Now the Shell can use the Checkout component as if it were a local file.
+
+```tsx
+// src/App.tsx
+import React, { lazy, Suspense } from 'react';
+
+const OrderSummary = lazy(() => import('checkout/OrderSummary'));
+
+export const App = () => (
+  <div>
+    <h1>My Main Shell</h1>
+    <Suspense fallback="Loading Order...">
+      <OrderSummary />
+    </Suspense>
+  </div>
+);
+```
+
+---
+
+## 📊 The 80/20 Rule / Quick Wins
+
+If you want the benefits of Micro-frontends without the complexity, use **Next.js Multi-Zones**. It allows you to merge multiple Next.js apps into a single domain using a reverse proxy (like Vercel). This gives you deployment independence with 0% of the Module Federation setup pain.
+
+---
+
+## 📚 Resources for Further Reading
+
+| Resource | Purpose |
+|----------|---------|
+| [Module Federation Docs](https://module-federation.io/) | The technical standard |
+| [Micro Frontends Manifesto](https://micro-frontends.org/) | The core philosophy |
+| [Next.js Multi-Zones](https://nextjs.org/docs/app/building-your-application/deploying/multi-zones) | The simpler alternative |
+
+---
+
+## 🎯 Your Action Item
+Ask yourself: "Does Team A's deployment currently block Team B?" If the answer is No, **stay in your monolith.** If the answer is Yes, and it's costing you hours of productivity every week, start your first **Module Federation** POC today.

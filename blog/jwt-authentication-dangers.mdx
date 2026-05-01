@@ -1,0 +1,112 @@
+---
+title: "The Hidden Dangers of JWT Authentication"
+date: "2026-05-01"
+author: "Ekuty Barnabas Ebu"
+authorImage: "/images/avatar.jpg"
+coverImage: "/images/blog/jwt-dangers-cover.jpg"
+excerpt: "JWT is convenient, but is it secure? Learn why 'stateless' authentication is a myth and how to fix the #1 vulnerability in modern APIs."
+tags: ["Security", "JWT", "Authentication", "Web Security"]
+readingTime: 12
+---
+
+## 🔐 Quick Summary (2-3 sentences)
+
+JSON Web Tokens (JWT) are the standard for modern API authentication, but they come with a dangerous "set it and forget it" mentality. This post exposes the architectural flaws of JWTs—specifically the inability to revoke tokens—and provides the "Double-Token" strategy to keep your users safe without sacrificing performance.
+
+---
+
+## 🔴 What Most People Get Wrong
+
+Most developers store JWTs in `localStorage`. **This is a massive security failure.** 
+
+If an attacker successfully executes a Cross-Site Scripting (XSS) attack (e.g., through a malicious 3rd party script), they can read your `localStorage` and steal the user's token instantly. From that moment on, they *are* that user until the token expires. You have no way to kick them out because JWTs are "stateless"—the server doesn't keep track of who is logged in.
+
+### 📊 JWT vs. Session Cookies
+
+| Feature | JWT (in LocalStorage) | Session (in HttpOnly Cookie) | Security Winner |
+|---------|-----------------------|-----------------------------|-----------------|
+| **Storage** | Browser Memory | Secure OS Storage | **Cookies** |
+| **XSS Protection** | ❌ None | ✅ Absolute | **Cookies** |
+| **CSRF Protection** | ✅ Built-in | ❌ Needs extra header | **JWT** |
+| **Revocation** | ❌ Impossible | ✅ Instant (Delete from DB) | **Session** |
+| **Scalability** | ✅ Perfect (Stateless) | ❌ Harder (Stateful) | **JWT** |
+
+---
+
+## 🟢 Deep Dive
+
+### 🚀 1. The "Stateless" Myth
+If you want to be able to ban a user or force a logout, you *must* keep state on the server. A pure JWT cannot be revoked once it is signed. If a user's laptop is stolen, an attacker can use that token for its entire lifespan (e.g., 7 days).
+
+### 🛡️ 2. The Solution: HttpOnly Cookies
+Always store your tokens in an **HttpOnly, Secure, SameSite=Strict** cookie. This prevents JavaScript from ever reading the token, making it invisible to XSS attacks.
+
+### 🔄 3. The Access & Refresh Pattern
+Use a short-lived **Access Token** (5 mins) for API calls and a long-lived **Refresh Token** (7 days) stored in a database to issue new access tokens. This gives you the best of both worlds: performance and the ability to revoke access.
+
+---
+
+## ✅ Step-by-Step Implementation
+
+### Step 1: Securely Set a Cookie in Next.js
+Don't send the token in the JSON body. Send it in a header.
+
+```javascript
+// app/api/login/route.ts
+import { cookies } from 'next/headers';
+
+export async function POST(req) {
+  const token = generateJWT(user);
+
+  // Set the cookie with maximum security
+  cookies().set('auth_token', token, {
+    httpOnly: true, // Invisible to JS (Prevents XSS)
+    secure: true,   // Only sent over HTTPS
+    sameSite: 'strict', // Prevents CSRF
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7 // 7 days
+  });
+
+  return Response.json({ success: true });
+}
+```
+
+### Step 2: Implement a Token Blacklist
+For "Critical" actions, check if the token ID has been revoked.
+
+```javascript
+// middleware.ts
+async function checkBlacklist(tokenId) {
+  const isRevoked = await redis.get(`revoked_${tokenId}`);
+  if (isRevoked) throw new Error("Unauthorized");
+}
+```
+
+### Step 3: Validate with JWS
+Never trust a JWT without verifying the signature with your secret key.
+
+```bash
+# Install the standard library for JWT verification
+npm install jose
+```
+
+---
+
+## 📊 The 80/20 Rule / Quick Wins
+
+The 80% of JWT security comes from **Setting a short Expiration Time**. Even if you ignore every other piece of advice in this post, setting your `exp` to 15 minutes instead of 1 year reduces the "Window of Vulnerability" for your users by 99.9%.
+
+---
+
+## 📚 Resources for Further Reading
+
+| Resource | Purpose |
+|----------|---------|
+| [JWT.io](https://jwt.io) | Debug and inspect your tokens |
+| [OWASP Auth Guide](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html) | Industry standard best practices |
+| [Auth0 Blog](https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/) | Deep dive into Refresh Tokens |
+
+---
+
+## 🎯 Your Action Item
+Open your browser's Developer Tools (F12). Go to the "Application" tab and check "Local Storage." If you see your **JWT token** sitting there in plain text, migrate it to an **HttpOnly Cookie** today. Your users' data depends on it.

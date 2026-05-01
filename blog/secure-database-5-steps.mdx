@@ -1,0 +1,139 @@
+---
+title: "How to Secure Your Database in 5 Steps"
+date: "2026-05-01"
+author: "Ekuty Barnabas Ebu"
+authorImage: "/images/avatar.jpg"
+coverImage: "/images/blog/secure-database-cover.jpg"
+excerpt: "Credential stuffing is the #1 threat in 2026. Stop being a target and learn the 5 non-negotiable steps to harden your data layer."
+tags: ["Cybersecurity", "Database", "PostgreSQL", "SQL"]
+readingTime: 15
+---
+
+## 🔒 Quick Summary (2-3 sentences)
+
+In an era of AI-driven brute force attacks, standard password hashing is no longer enough. This guide outlines a defense-in-depth strategy to secure your database, ranging from application-level rate limiting to kernel-level encryption, ensuring your users' data stays safe even if your application is compromised.
+
+---
+
+## 🔴 What Most People Get Wrong
+
+Most developers think a "strong password policy" is their main defense. It isn't. In 2026, **Credential Stuffing**—where attackers use billions of leaked passwords from other breaches—is the primary cause of data loss. 
+
+If you aren't tracking login attempts and locking accounts at the **database level**, you are leaving the door wide open.
+
+### 📊 Security Maturity Model
+
+| Feature | Junior Level | Professional Level | Elite (2026) |
+|---------|--------------|--------------------|--------------|
+| **Passwords** | Plaintext / MD5 | Bcrypt / Argon2 | Argon2ID + Salt Pepper |
+| **Access** | Root user only | Environment Variables | IAM / Vault Dynamic Roles |
+| **Network** | Publicly accessible | Whitelisted IP | VPC / Private Link Only |
+| **Logging** | Console logs | SQL Error Logs | Real-time AI Anomaly Detection |
+
+---
+
+## 🟢 Deep Dive
+
+### 🛡️ 1. Stop Credential Stuffing at the Schema Level
+Don't handle security just in your Node.js code. Move the source of truth to the database. By adding a `locked_until` column, you create a hardware-level barrier against automated scripts.
+
+### 🔑 2. The Hashing Gold Standard
+If you are still using `sha256`, you are effectively storing plaintext. I recommend **Argon2ID** or **Bcrypt with 12+ rounds**.
+
+### 🏗️ 3. The Principle of Least Privilege
+Your application should NEVER connect to the database as the `postgres` or `admin` user. If an attacker gains access to your `.env` file, they shouldn't be able to drop your tables.
+
+---
+
+## ✅ Step-by-Step Implementation
+
+### Step 1: Update Your User Schema
+Run this migration to add rate-limiting support directly to your table.
+
+```sql
+-- migration.sql
+ALTER TABLE users ADD COLUMN login_attempts INT DEFAULT 0;
+ALTER TABLE users ADD COLUMN last_login_attempt TIMESTAMP;
+ALTER TABLE users ADD COLUMN locked_until TIMESTAMP;
+```
+
+### Step 2: Implement Rate Limiting Logic
+Here is how you handle the login flow to prevent brute force.
+
+```javascript
+// services/auth.js
+async function handleLogin(email, password) {
+  const user = await db.user.findUnique({ where: { email } });
+  
+  // 1. Check if account is locked
+  if (user.lockedUntil && user.lockedUntil > new Date()) {
+    throw new Error('Account locked. Please try again in 30 minutes.');
+  }
+  
+  // 2. Check for suspicious spikes
+  if (user.loginAttempts >= 5 && 
+      user.lastLoginAttempt > new Date(Date.now() - 15 * 60 * 1000)) {
+    await db.user.update({
+      where: { email },
+      data: { lockedUntil: new Date(Date.now() + 30 * 60 * 1000) }
+    });
+    throw new Error('Too many attempts. Account locked.');
+  }
+  
+  // 3. Verify with Bcrypt
+  const isValid = await bcrypt.compare(password, user.passwordHash);
+  
+  if (!isValid) {
+    await db.user.update({
+      where: { email },
+      data: { 
+        loginAttempts: { increment: 1 },
+        lastLoginAttempt: new Date()
+      }
+    });
+    return false;
+  }
+  
+  // Reset on success
+  await db.user.update({
+    where: { email },
+    data: { loginAttempts: 0, lockedUntil: null }
+  });
+  return true;
+}
+```
+
+### Step 3: Create Restricted Database Users
+Run these commands in your SQL console to create an "App" user that can't delete your data.
+
+```sql
+-- Create app-specific user
+CREATE USER 'web_app_user'@'%' IDENTIFIED BY 'v3ry_str0ng_p4ss';
+
+-- Grant only what is needed
+GRANT SELECT, INSERT, UPDATE ON my_production_db.* TO 'web_app_user'@'%';
+
+-- Ensure it CANNOT drop tables
+REVOKE DROP, TRUNCATE ON my_production_db.* FROM 'web_app_user'@'%';
+```
+
+---
+
+## 📊 The 80/20 Rule / Quick Wins
+
+The single most effective thing you can do for database security is to **Disable Public Access**. 80% of database hacks happen because a database port (5432 or 3306) was left open to the internet. Use a VPN or a VPC Peering connection instead.
+
+---
+
+## 📚 Resources for Further Reading
+
+| Resource | Why Read It |
+|----------|-------------|
+| [OWASP Top 10](https://owasp.org/www-project-top-ten/) | The industry standard for web security |
+| [Prisma Security Best Practices](https://www.prisma.io/docs/guides/other/security) | Hardening your ORM layer |
+| [PostgreSQL Hacking Guide](https://www.postgresql.org/docs/current/pgcrypto.html) | Advanced encryption techniques |
+
+---
+
+## 🎯 Your Action Item
+Check your database connection string today. If it uses the `admin` or `postgres` user, create a limited `app_user` with no `DROP` privileges and switch to it immediately.

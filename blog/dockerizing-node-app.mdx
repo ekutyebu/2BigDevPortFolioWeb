@@ -1,0 +1,122 @@
+---
+title: "Dockerizing Your First Node.js App in 5 Minutes"
+date: "2026-05-01"
+author: "Ekuty Barnabas Ebu"
+authorImage: "/images/avatar.jpg"
+coverImage: "/images/blog/docker-node-cover.jpg"
+excerpt: "Stop 'works on my machine' syndrome. Learn how to package your app into a lightweight, secure container that runs anywhere."
+tags: ["Docker", "Node.js", "DevOps", "Deployment"]
+readingTime: 10
+---
+
+## 🐳 Quick Summary (2-3 sentences)
+
+Docker is the industry standard for shipping software. By packaging your application and its entire environment into a "Container," you ensure that it runs exactly the same on your laptop, your teammate's Mac, and your production server. This post gives you the "Golden Template" for a production-ready Node.js Dockerfile.
+
+---
+
+## 🔴 What Most People Get Wrong
+
+Most developers write Dockerfiles that are way too big. They include their `node_modules`, their test files, and even their Git history in the final image. 
+
+**The result?** A 1.2GB image that takes 5 minutes to deploy. 
+
+A professional Dockerfile uses **Multi-Stage Builds**. You use one stage to build the app (with all the heavy dependencies) and a second, tiny stage to actually run it (with only the production files). This can shrink your image from 1GB down to **100MB**.
+
+### 📊 Image Size Optimization
+
+| Strategy | Resulting Image Size | Build Time | Security |
+|----------|----------------------|------------|----------|
+| **Standard (No optimization)** | 1.1 GB | Slow | ❌ Poor (Includes dev tools) |
+| **Using Alpine Linux** | 450 MB | Fast | ✅ Good (Small attack surface) |
+| **Multi-Stage Build** | **120 MB** | **Fastest** | ✅ **Best** (Only prod files) |
+| **Distroless** | 80 MB | Fast | ✅ Elite (No shell access) |
+
+---
+
+## 🟢 Deep Dive
+
+### 🚀 1. The `.dockerignore` is Mandatory
+Before you even write a Dockerfile, you need a `.dockerignore`. This prevents Docker from copying your local `node_modules` into the container, which is the #1 cause of "Architecture Mismatch" errors (e.g., trying to run a Mac binary on a Linux server).
+
+### 🛡️ 2. Never Run as Root
+By default, Docker runs your app as the `root` user. This is a massive security risk. If an attacker escapes your app, they have full control over the host. Always switch to a non-privileged user (like `node`).
+
+### 📦 3. Layer Caching
+Docker builds images in layers. If you copy your `package.json` and run `npm install` *before* you copy your source code, Docker will cache your dependencies. This means that if you change one line of code, your next build will take 2 seconds instead of 2 minutes.
+
+---
+
+## ✅ Step-by-Step Implementation
+
+### Step 1: Create the `.dockerignore`
+Copy this exactly into your project root.
+
+```text
+node_modules
+npm-debug.log
+Dockerfile
+.git
+.env
+dist
+```
+
+### Step 2: The "Golden" Production Dockerfile
+This uses the Multi-Stage pattern for maximum efficiency.
+
+```dockerfile
+# Stage 1: Build the application
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# Stage 2: Run the application
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+
+# Only copy what is needed for runtime
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+
+# Security: Run as a non-root user
+USER node
+EXPOSE 3000
+CMD ["node", "dist/main.js"]
+```
+
+### Step 3: Build and Run
+Test it locally before pushing to the cloud.
+
+```bash
+# Build the image
+docker build -t my-awesome-app .
+
+# Run the container
+docker run -p 3000:3000 --env-file .env my-awesome-app
+```
+
+---
+
+## 📊 The 80/20 Rule / Quick Wins
+
+The 80% of Docker success comes from **Using a fixed Node version**. Never use `FROM node:latest`. If the Node team releases a new version tomorrow that breaks your app, your next build will fail. Always use a specific tag like `node:20-alpine` to ensure stability.
+
+---
+
+## 📚 Resources for Further Reading
+
+| Resource | Purpose |
+|----------|---------|
+| [Docker for Node.js Guide](https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md) | Official best practices |
+| [Alpine Linux](https://alpinelinux.org/) | The lightweight base for containers |
+| [Docker Scout](https://www.docker.com/products/docker-scout/) | Scanning your images for vulnerabilities |
+
+---
+
+## 🎯 Your Action Item
+Create a `Dockerfile` in your current project today using the **Multi-Stage Build** template above. Run `docker build` and see how much smaller your final image is compared to a standard build.

@@ -1,0 +1,111 @@
+---
+title: "The Importance of Unit Testing"
+date: "2026-05-01"
+author: "Ekuty Barnabas Ebu"
+authorImage: "/images/avatar.jpg"
+coverImage: "/images/blog/unit-testing-cover.jpg"
+excerpt: "Tests aren't for the code you're writing today—they're for the code you'll change tomorrow. Learn why testing behavior is better than testing code."
+tags: ["Testing", "Vitest", "Quality Assurance", "React"]
+readingTime: 11
+---
+
+## 🧪 Quick Summary (2-3 sentences)
+
+Unit testing is the only way to ensure that today's "quick fix" doesn't become tomorrow's production outage. This post explores the philosophy of testing **behavior over implementation**, how to build a resilient test suite that doesn't break every time you refactor, and why 100% code coverage is a trap you should avoid.
+
+---
+
+## 🔴 What Most People Get Wrong
+
+Most developers think unit testing is about "checking if the code works." It isn't. You already know the code works—you just wrote it. 
+
+**Tests are for Refactoring.** A good test suite is like a safety net for your future self. It allows you to rewrite your entire backend logic and *know* that you haven't broken the user's experience. If your tests break every time you rename a variable, you aren't testing behavior—you are testing implementation.
+
+### 📊 The Testing Priority Matrix
+
+| Feature Type | Test Priority | Why? |
+|--------------|---------------|------|
+| **Business Logic** | ✅ **Highest** | This is the "brain" of your app. Errors here cost money. |
+| **Auth & Permissions** | ✅ **Highest** | Security failures are catastrophic. |
+| **Edge Cases** | ✅ High | This is where 90% of bugs actually live. |
+| **API Integration** | ✅ Medium | Mocks are good, but E2E is better for this. |
+| **UI Styling** | ❌ Low | Visual regression tools are better for this. |
+
+---
+
+## 🟢 Deep Dive
+
+### 🚀 1. Test Behavior, Not Implementation
+**The Wrong Way:** Checking if `component.state.isOpen` is true.
+**The Right Way:** Checking if the "Modal" text is visible on the screen after a click.
+
+### 🧠 2. The 80/20 Coverage Rule
+Don't aim for 100% coverage. Aim for 80%. The last 20% often involves testing trivial code (like constants or simple getters) which takes 50% of the time but provides 0% of the value.
+
+### 🛡️ 3. Use Mocks Sparingly
+If you mock everything, you aren't testing your app; you are testing your mocks. I recommend mocking external APIs (like Stripe or Twilio) but keeping your internal database calls real using a test database.
+
+---
+
+## ✅ Step-by-Step Implementation
+
+We will use **Vitest** for these examples. It's 10x faster than Jest and works out-of-the-box with Next.js.
+
+### Step 1: Install and Configure Vitest
+The modern standard for React testing.
+
+```bash
+# Install testing dependencies
+npm install -D vitest @testing-library/react @testing-library/user-event jsdom
+```
+
+### Step 2: Write a Behavioral Component Test
+Notice how we don't care about the internal state of the component.
+
+```tsx
+// components/Counter.test.tsx
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { Counter } from './Counter';
+
+test('increments count when button is clicked', async () => {
+  const user = userEvent.setup();
+  render(<Counter />);
+
+  // Find the button and click it
+  const button = screen.getByRole('button', { name: /increment/i });
+  await user.click(button);
+
+  // Verify the result on screen
+  expect(screen.getByText(/count is 1/i)).toBeInTheDocument();
+});
+```
+
+### Step 3: Run Your Tests in "Watch" Mode
+This should be running in a separate terminal every time you code.
+
+```bash
+# Start vitest in watch mode
+npx vitest
+```
+
+---
+
+## 📊 The 80/20 Rule / Quick Wins
+
+The 80% of your bugs will be caught by **Testing your "Happy Path" and one "Error Path"** for each major feature. Don't worry about the 500 edge cases. Just make sure the user can sign up and the user sees a clear error if the database is down.
+
+---
+
+## 📚 Resources for Further Reading
+
+| Tool | Purpose |
+|------|---------|
+| [Vitest Docs](https://vitest.dev/) | The fastest runner in the ecosystem |
+| [Testing Library](https://testing-library.com/) | The standard for behavioral testing |
+| [Kent C. Dodds Blog](https://kentcdodds.com/blog/testing-implementation-details) | The definitive guide on what not to test |
+
+---
+
+## 🎯 Your Action Item
+Pick your most critical function (e.g., `calculateTotalPrice` or `validateUser`) and write **three tests** for it today: one for the correct input, one for a missing input, and one for a nonsense input. See how much more confident you feel about that code.

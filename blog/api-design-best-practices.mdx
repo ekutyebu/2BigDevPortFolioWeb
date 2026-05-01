@@ -1,0 +1,104 @@
+---
+title: "API Design 101: Keeping Your Frontend Devs Happy"
+date: "2026-05-01"
+author: "Ekuty Barnabas Ebu"
+authorImage: "/images/avatar.jpg"
+excerpt: "A great API is invisible. Learn the 5 design principles that will make your frontend team love working with your backend."
+tags: ["API Design", "Backend", "REST", "DX"]
+readingTime: 11
+---
+
+## 🔌 Quick Summary (2-3 sentences)
+
+The quality of your backend is measured by the happiness of the frontend developers who consume it. A well-designed API is predictable, consistent, and self-documenting. This post outlines the 5 non-negotiable rules for building RESTful APIs that reduce Slack questions and speed up feature delivery.
+
+---
+
+## 🔴 What Most People Get Wrong
+
+Most backend developers design APIs around their **Database Schema**. They expose exactly what the database looks like. 
+
+**The problem?** The frontend doesn't need your database schema; it needs a **UI-ready representation**. If a frontend dev has to make 5 different API calls just to show one user profile page (e.g., `/user`, `/user/permissions`, `/user/posts`, etc.), your API is failing. This is called "Under-fetching," and it's the #1 killer of mobile performance.
+
+### 📊 The Good vs. Great API
+
+| Feature | Good API | Great API | Impact |
+|---------|----------|-----------|--------|
+| **Status Codes** | Everything is a `200 OK` | Proper codes (`201`, `403`, `429`) | Error Handling |
+| **Data Shape** | Array of IDs | Full nested objects (where needed) | Fewer Requests |
+| **Documentation** | A README file | **OpenAPI / Swagger UI** | Autonomy |
+| **Filtering** | `?q=search` | Standardized `?filter[name]=...` | Predictability |
+| **Errors** | "Internal Error" | `{ code: "AUTH_001", message: "..." }` | Fast Debugging |
+
+---
+
+## 🟢 Deep Dive
+
+### 🚀 1. The "Consistent Error" Pattern
+Nothing frustrates a frontend dev more than guessing why an API failed. Always return a consistent JSON structure for errors so they can build a single "Toast" notification system for the whole app.
+
+### 🧠 2. Use ISO-8601 for Dates
+Never return "2 hours ago" or a raw Unix timestamp. Always return **ISO-8601 strings** (e.g., `2026-05-01T12:00:00Z`). This allows the frontend to format the date correctly for the user's local timezone.
+
+### 🛡️ 3. Versioning is a Life-Saver
+Always prefix your routes with `/v1/`. This allows you to deploy a breaking change to `/v2/` without crashing the current mobile app in the field.
+
+---
+
+## ✅ Step-by-Step Implementation
+
+### Step 1: Implement a Standard Response Wrapper
+Ensure every response looks the same.
+
+```javascript
+// middleware/response.js
+export function successResponse(data, meta = {}) {
+  return {
+    success: true,
+    data: data,
+    meta: meta, // For pagination info like { total: 100, page: 1 }
+    timestamp: new Date().toISOString()
+  };
+}
+```
+
+### Step 2: Use Proper HTTP Status Codes
+Stop returning `200` for errors!
+
+```javascript
+// Example: Creating a user
+if (userExists) {
+  return Response.json({ error: "Email taken" }, { status: 409 }); // 409 Conflict
+}
+
+return Response.json(newUser, { status: 201 }); // 201 Created
+```
+
+### Step 3: Automate your Documentation
+Use Swagger to give your frontend devs a "Playground" where they can test routes without your help.
+
+```bash
+# Install Swagger for Next.js
+npm install swagger-ui-react
+```
+
+---
+
+## 📊 The 80/20 Rule / Quick Wins
+
+The 80% of your API's quality comes from **Naming**. Use plural nouns for resources (e.g., `/users` not `/getUser`) and follow the standard HTTP verbs (GET, POST, PUT, DELETE). If your API follows the "Principle of Least Astonishment," your frontend devs will be 2x more productive.
+
+---
+
+## 📚 Resources for Further Reading
+
+| Resource | Purpose |
+|----------|---------|
+| [Google API Design Guide](https://cloud.google.com/apis/design) | The gold standard of REST design |
+| [JSON:API Standard](https://jsonapi.org/) | A shared convention for JSON APIs |
+| [Postman](https://www.postman.com/) | Testing and documenting your work |
+
+---
+
+## 🎯 Your Action Item
+Pick your most used API route. If it returns an error, check if it uses a **proper 4xx status code**. If it's returning a `200` with an `{ error: true }` body, change it to the correct status code today. Your frontend dev's error-handling logic will thank you.
