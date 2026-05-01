@@ -16,19 +16,27 @@ export default function SkillsPage() {
       <Skills />
       
       <div className="section-container pb-24">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-          <div className="glass p-8 rounded-3xl">
-            <h3 className="text-xl font-bold font-outfit mb-4">Frontend</h3>
-            <p className="text-muted">Specializing in React and Next.js for building fast, SEO-friendly, and interactive user interfaces.</p>
-          </div>
-          <div className="glass p-8 rounded-3xl">
-            <h3 className="text-xl font-bold font-outfit mb-4">Backend</h3>
-            <p className="text-muted">Architecting robust APIs and server-side logic using Node.js, Express, and PostgreSQL.</p>
-          </div>
-          <div className="glass p-8 rounded-3xl">
-            <h3 className="text-xl font-bold font-outfit mb-4">Design</h3>
-            <p className="text-muted">Creating clean, modern, and accessible designs using Tailwind CSS and Framer Motion.</p>
-          </div>
+        <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-primary-500 mb-12 text-center">My Workflow Tools</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+          {[
+            { name: "Git", level: "Expert" },
+            { name: "VS Code", level: "Primary IDE" },
+            { name: "Figma", level: "Design" },
+            { name: "Postman", level: "API Testing" },
+            { name: "Docker", level: "Learning" },
+            { name: "Linux", level: "OS" },
+            { name: "Vercel", level: "Hosting" },
+            { name: "Prisma", level: "ORM" },
+            { name: "Python", level: "Backend" },
+            { name: "AI Tools", level: "Efficiency" },
+            { name: "NLP", level: "TextBlob" },
+            { name: "SQL", level: "Database" },
+          ].map((tool, index) => (
+            <div key={index} className="glass p-6 rounded-2xl text-center hover:border-primary-500 transition-colors">
+              <p className="font-bold font-outfit text-sm">{tool.name}</p>
+              <p className="text-[10px] text-primary-500 font-bold uppercase tracking-widest mt-1">{tool.level}</p>
+            </div>
+          ))}
         </div>
       </div>
     </main>

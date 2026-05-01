@@ -43,6 +43,43 @@ export default function AboutPage() {
         </div>
 
         <div className="mt-32">
+          <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-primary-500 mb-12">My Journey</h2>
+          <div className="space-y-12">
+            {[
+              {
+                year: "2024 - Present",
+                title: "Full Stack Development & Engineering",
+                company: "Freelance / Open Source",
+                description: "Building production-ready applications for clients and contributing to open-source projects. Focusing on scalability and modern UI/UX."
+              },
+              {
+                year: "2023 - 2024",
+                title: "Specialization in Next.js & AI Integration",
+                company: "Independent Learning & Projects",
+                description: "Mastered Next.js 14 and integrated AI tools like OpenAI and TextBlob into web products to create smarter user experiences."
+              },
+              {
+                year: "2022 - 2023",
+                title: "The Foundation",
+                company: "Academic & Self-Taught",
+                description: "Started with HTML/CSS and JavaScript. Built over 10+ small-scale projects to understand the fundamentals of web architecture."
+              }
+            ].map((item, index) => (
+              <div key={index} className="grid grid-cols-1 md:grid-cols-[1fr_3fr] gap-8 items-start relative pl-8 md:pl-0">
+                <div className="text-primary-500 font-bold font-outfit text-xl pt-1">
+                  {item.year}
+                </div>
+                <div className="glass p-8 rounded-3xl border-l-4 border-l-primary-500">
+                  <h4 className="text-xl font-bold font-outfit mb-2">{item.title}</h4>
+                  <p className="text-primary-500 font-medium text-sm mb-4">{item.company}</p>
+                  <p className="text-muted leading-relaxed">{item.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-32">
           <section className="py-24 bg-primary-500 rounded-[3rem] text-white overflow-hidden relative">
             <div className="absolute inset-0 opacity-10">
                <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
