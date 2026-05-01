@@ -21,7 +21,8 @@ const Navbar = () => {
     { name: "Contact", href: "/contact" },
   ];
 
-  if (!mounted) return null;
+  // Use a simple check for theme icons to avoid hydration mismatch
+  const themeIcon = !mounted ? <Moon size={20} /> : (theme === "dark" ? <Sun size={20} /> : <Moon size={20} />);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
@@ -51,7 +52,7 @@ const Navbar = () => {
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
             >
-              {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+              {themeIcon}
             </button>
             <Link
               href="/contact"
@@ -67,7 +68,7 @@ const Navbar = () => {
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
             >
-              {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+              {themeIcon}
             </button>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}

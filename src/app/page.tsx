@@ -22,12 +22,13 @@ export default async function Home() {
         <div className="section-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="relative">
-              <div className="aspect-square rounded-3xl bg-primary-500/10 border border-primary-500/20 overflow-hidden relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary-500/20 to-accent-500/20" />
-                {/* Image Placeholder */}
-                <div className="absolute inset-0 flex items-center justify-center text-primary-500/40">
-                  <span className="font-outfit font-bold text-6xl">2Big</span>
-                </div>
+              <div className="aspect-square rounded-3xl bg-primary-500/10 border border-primary-500/20 overflow-hidden relative group shadow-2xl shadow-primary-500/10">
+                <img 
+                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=1000" 
+                  alt="Ekuty Barnabas Ebu"
+                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
               <div className="absolute -bottom-6 -right-6 glass p-6 rounded-2xl hidden md:block">
                 <p className="font-bold text-2xl">1+</p>
