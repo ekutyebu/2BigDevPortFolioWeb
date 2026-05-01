@@ -25,11 +25,12 @@ const getPrismaClient = () => {
     });
   } else {
     // Production runtime on Vercel
-    // Force HTTP (Fetch) mode for maximum stability on serverless
-    (neonConfig as any).useFetchBatch = true;
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const pool = new Pool({ 
+      connectionString: process.env.DATABASE_URL,
+      max: 1 // Optimize for serverless environments
+    });
     const adapter = new PrismaNeon(pool);
-    return new PrismaClient({ adapter, log: ["error"] });
+    return new PrismaClient({ adapter });
   }
 };
 
