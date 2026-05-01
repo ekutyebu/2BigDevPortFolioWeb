@@ -17,7 +17,7 @@ async function main() {
     return;
   }
 
-  const files = fs.readdirSync(blogDir).filter(file => file.endsWith('.mdx'));
+  const files = fs.readdirSync(blogDir).filter((file: string) => file.endsWith('.mdx'));
   console.log(`📂 Found ${files.length} MDX files. Parsing...`);
 
   for (const file of files) {
@@ -34,7 +34,7 @@ async function main() {
       const content = fileContent.replace(frontmatterRegex, '').trim();
       
       const frontmatter: any = {};
-      frontmatterStr.split('\n').forEach(line => {
+      frontmatterStr.split('\n').forEach((line: string) => {
         const [key, ...valueParts] = line.split(':');
         if (key && valueParts.length > 0) {
           const value = valueParts.join(':').trim().replace(/^"(.*)"$/, '$1');
