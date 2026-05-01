@@ -4,16 +4,20 @@ import { prisma } from "@/lib/prisma";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://your-portfolio.com";
 
-  // Get all blog posts for dynamic sitemap
-  const posts = await prisma.post.findMany({
-    where: { published: true },
-    select: { slug: true, updatedAt: true },
-  });
+  let postUrls: any[] = [];
+  try {
+    const posts = await prisma.post.findMany({
+      where: { published: true },
+      select: { slug: true, updatedAt: true },
+    });
 
-  const postUrls = posts.map((post) => ({
-    url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: post.updatedAt,
-  }));
+    postUrls = posts.map((post) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: post.updatedAt,
+    }));
+  } catch (error) {
+    console.error("Sitemap generation failed:", error);
+  }
 
   return [
     {
