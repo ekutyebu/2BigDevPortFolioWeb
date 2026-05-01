@@ -39,3 +39,12 @@ model Project {
   order       Int      @default(0)
   createdAt   DateTime @default(now())
 }
+
+model Skill {
+  id        String   @id @default(cuid())
+  name      String
+  category  String
+  level     Int      @default(0)
+  icon      String?
+  createdAt DateTime @default(now())
+}
