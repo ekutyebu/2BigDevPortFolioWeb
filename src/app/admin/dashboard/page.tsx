@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import AdminDashboardClient from "@/components/admin/AdminDashboardClient";
 
 export default async function AdminDashboard() {
@@ -18,6 +18,7 @@ export default async function AdminDashboard() {
   let errorMsg = null;
 
   try {
+    const prisma = getPrisma();
     const data = await Promise.all([
       prisma.post.findMany({ orderBy: { createdAt: "desc" } }),
       prisma.project.findMany({ orderBy: { order: "asc" } }),

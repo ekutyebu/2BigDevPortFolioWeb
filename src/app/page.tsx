@@ -13,6 +13,7 @@ export default async function Home() {
     const prisma = getPrisma();
     projects = await prisma.project.findMany({
       orderBy: { order: "asc" },
+      take: 3,
     });
   } catch (error: any) {
     console.error("Home page project fetch failed:", error);

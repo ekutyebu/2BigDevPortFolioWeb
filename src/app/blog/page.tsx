@@ -59,8 +59,7 @@ export default async function BlogPage() {
                   {post.title}
                 </h2>
                 <p className="text-muted line-clamp-3 mb-6">
-                  {/* Extracting a snippet from content - simplified for now */}
-                  {post.content.substring(0, 160)}...
+                  {post.content.replace(/<[^>]*>/g, '').substring(0, 160)}...
                 </p>
                 <div className="flex items-center gap-2 font-bold text-primary-500">
                   Read More <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
