@@ -8,8 +8,9 @@ import { getPrisma } from "@/lib/prisma";
 export default async function Home() {
   let projects: any[] = [];
   let errorMsg = null;
-  let dbName = "Unknown";
+  let dbName = "Testing Mode (DB Disabled)";
   
+  /* Temporarily disabled for debugging
   try {
     const dbUrl = process.env.DATABASE_URL || "";
     dbName = dbUrl.split('@')[1]?.split('.')[0] || "No URL Found";
@@ -22,6 +23,7 @@ export default async function Home() {
     console.error("Home page project fetch failed:", error);
     errorMsg = error.message || "Unknown Database Error";
   }
+  */
 
   return (
     <div className="flex flex-col">

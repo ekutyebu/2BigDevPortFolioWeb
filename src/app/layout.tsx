@@ -73,38 +73,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <script
-            async
-            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1832286453723558"
-            crossOrigin="anonymous"
-          ></script>
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "Person",
-                "name": "Ekuty Barnabas Ebu",
-                "jobTitle": "Junior Full-Stack Developer",
-                "url": "https://2bigdev-portfolio.vercel.app",
-                "address": {
-                  "@type": "PostalAddress",
-                  "addressLocality": "Douala",
-                  "addressCountry": "Cameroon"
-                },
-                "sameAs": [
-                  "https://github.com/ekutyebu/",
-                  "https://linkedin.com/in/ekuty-ebu-86a617235/"
-                ]
-              }),
-            }}
-          />
           <div className="flex min-h-screen flex-col">
             <Navbar />
             <main className="flex-grow">{children}</main>
             <Footer />
           </div>
-          <ChatWidget />
         </ThemeProvider>
       </body>
     </html>
