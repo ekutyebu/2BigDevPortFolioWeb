@@ -20,26 +20,27 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     if (!post) return { title: "Post Not Found" };
 
-    const description = post.content ? post.content.substring(0, 160).replace(/[#*`]/g, '') : "";
+    const description = post.content ? post.content.substring(0, 160).replace(/[#*`]/g, '') : "Technical Insight";
+    const date = post.createdAt ? new Date(post.createdAt) : new Date();
+    const isoDate = !isNaN(date.getTime()) ? date.toISOString() : new Date().toISOString();
 
     return {
-      title: `${post.title} | Ekuty Ebu Blog`,
+      title: `${post.title} | Ekuty Ebu`,
       description: description,
       openGraph: {
         title: post.title,
         description: description,
         type: "article",
-        publishedTime: post.createdAt instanceof Date ? post.createdAt.toISOString() : new Date(post.createdAt).toISOString(),
+        publishedTime: isoDate,
       },
     };
   } catch (error) {
-    return { title: "Blog Post | 2BigDev" };
+    return { title: "Blog Post | Ekuty Ebu" };
   }
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
   const decodedSlug = decodeURIComponent(params.slug);
-  console.log("DEBUG: Fetching post with decoded slug:", decodedSlug);
   
   let post = null;
   try {
@@ -48,13 +49,17 @@ export default async function BlogPostPage({ params }: PageProps) {
       where: { slug: decodedSlug },
     });
   } catch (error) {
-    console.error("DEBUG: Prisma Post Fetch Error:", error);
+    console.error("DEBUG: Prisma Fetch Error:", error);
   }
 
-  if (!post) {
-    console.error("DEBUG: Post not found for slug:", decodedSlug);
-    notFound();
-  }
+  if (!post) notFound();
+
+  const formattedDate = (() => {
+    try {
+      const d = post.createdAt ? new Date(post.createdAt) : new Date();
+      return !isNaN(d.getTime()) ? d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "May 1, 2026";
+    } catch { return "May 1, 2026"; }
+  })();
 
   return (
     <article className="pt-32 pb-24">
@@ -62,27 +67,23 @@ export default async function BlogPostPage({ params }: PageProps) {
         <Link href="/blog" className="inline-flex items-center gap-2 text-primary-500 font-bold mb-8 hover:gap-3 transition-all">
           <ChevronLeft size={20} /> Back to Blog
         </Link>
-
+        
         <div className="flex items-center gap-4 text-sm text-muted font-medium mb-6">
           <Calendar size={16} />
-          {new Date(post.createdAt).toLocaleDateString("en-US", {
-            month: "long",
-            day: "numeric",
-            year: "numeric",
-          })}
+          {formattedDate}
           <span className="w-1 h-1 rounded-full bg-gray-300" />
-          <span>8 min read</span>
+          <span>{post.content ? Math.ceil(post.content.split(' ').length / 200) : 5} min read</span>
         </div>
 
         <h1 className="text-4xl md:text-5xl font-bold font-outfit leading-tight mb-8">
           {post.title}
         </h1>
 
-        <div className="aspect-video rounded-3xl bg-primary-500/10 mb-12 overflow-hidden relative">
+        <div className="aspect-video rounded-3xl bg-primary-500/10 mb-12 overflow-hidden relative border border-white/5">
            {post.image ? (
              <img src={post.image} className="w-full h-full object-cover" alt={post.title} />
            ) : (
-             <div className="absolute inset-0 bg-gradient-to-br from-primary-500/20 to-accent-500/20" />
+             <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 to-accent-500/10 flex items-center justify-center text-primary-500/30 text-8xl font-black">2B</div>
            )}
         </div>
 
