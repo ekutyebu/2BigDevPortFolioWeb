@@ -6,7 +6,7 @@ import ContactForm from "@/components/ContactForm";
 import { prisma } from "@/lib/prisma";
 
 export default async function Home() {
-  let projects = [];
+  let projects: any[] = [];
   try {
     projects = await prisma.project.findMany({
       orderBy: { order: "asc" },

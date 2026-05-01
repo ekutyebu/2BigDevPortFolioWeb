@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import Projects from "@/components/Projects";
 
 export default async function ProjectsPage() {
-  let projects = [];
+  let projects: any[] = [];
   try {
     projects = await prisma.project.findMany({
       orderBy: { order: "asc" },
