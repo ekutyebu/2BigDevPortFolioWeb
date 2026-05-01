@@ -13,10 +13,21 @@ export default async function AdminDashboard() {
   }
 
   // Fetch initial data
-  const [posts, projects] = await Promise.all([
-    prisma.post.findMany({ orderBy: { createdAt: "desc" } }),
-    prisma.project.findMany({ orderBy: { order: "asc" } }),
-  ]);
+  let posts: any[] = [];
+  let projects: any[] = [];
+  let errorMsg = null;
+
+  try {
+    const data = await Promise.all([
+      prisma.post.findMany({ orderBy: { createdAt: "desc" } }),
+      prisma.project.findMany({ orderBy: { order: "asc" } }),
+    ]);
+    posts = data[0];
+    projects = data[1];
+  } catch (e: any) {
+    console.error("Dashboard Fetch Error:", e);
+    errorMsg = e.message || "Failed to connect to database.";
+  }
 
   return (
     <div className="pt-32 pb-24 min-h-screen bg-gray-50 dark:bg-black">
@@ -33,7 +44,15 @@ export default async function AdminDashboard() {
           </form>
         </div>
 
-        <AdminDashboardClient initialPosts={posts} initialProjects={projects} />
+        {errorMsg ? (
+          <div className="glass p-12 rounded-3xl border-red-500/50 text-center">
+            <h2 className="text-2xl font-bold text-red-500 mb-4">Database Connection Error</h2>
+            <p className="text-muted mb-8">{errorMsg}</p>
+            <p className="text-sm text-muted">Please check your DATABASE_URL in Vercel settings and ensure it is the Pooler URL.</p>
+          </div>
+        ) : (
+          <AdminDashboardClient initialPosts={posts} initialProjects={projects} />
+        )}
       </div>
     </div>
   );

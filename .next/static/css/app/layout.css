@@ -999,6 +999,9 @@ video {
 .border-primary-500\/30 {
   border-color: rgb(14 165 233 / 0.3);
 }
+.border-red-500\/50 {
+  border-color: rgb(239 68 68 / 0.5);
+}
 .border-l-primary-500 {
   --tw-border-opacity: 1;
   border-left-color: rgb(14 165 233 / var(--tw-border-opacity, 1));
