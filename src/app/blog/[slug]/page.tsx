@@ -104,10 +104,8 @@ export default async function BlogPostPage({ params }: PageProps) {
 
                 // 1. Code Block Logic
                 if (trimmed.startsWith('```')) {
-                  if (!inCode) {
-                    inCode = true;
-                    return;
-                  } else {
+                  if (!inCode) { inCode = true; return; } 
+                  else {
                     inCode = false;
                     const code = currentCode.join('\n');
                     rendered.push(
@@ -116,49 +114,42 @@ export default async function BlogPostPage({ params }: PageProps) {
                           <button onClick={() => navigator.clipboard.writeText(code)} className="bg-primary-500/20 hover:bg-primary-500/40 backdrop-blur-md text-primary-400 text-xs font-bold px-3 py-1.5 rounded-lg border border-primary-500/20 transition-all">Copy</button>
                         </div>
                         <div className="bg-[#0d1117] rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
-                          <div className="px-6 py-3 bg-white/5 border-b border-white/5 flex justify-between items-center">
-                            <div className="flex gap-2"><div className="w-3 h-3 rounded-full bg-[#ff5f56]" /><div className="w-3 h-3 rounded-full bg-[#ffbd2e]" /><div className="w-3 h-3 rounded-full bg-[#27c93f]" /></div>
-                          </div>
+                          <div className="px-6 py-3 bg-white/5 border-b border-white/5 flex justify-between items-center"><div className="flex gap-2"><div className="w-3 h-3 rounded-full bg-[#ff5f56]" /><div className="w-3 h-3 rounded-full bg-[#ffbd2e]" /><div className="w-3 h-3 rounded-full bg-[#27c93f]" /></div></div>
                           <pre className="p-8 overflow-x-auto font-mono text-sm text-[#c9d1d9] leading-relaxed"><code>{code}</code></pre>
                         </div>
                       </div>
                     );
-                    currentCode = [];
-                    return;
+                    currentCode = []; return;
                   }
                 }
                 if (inCode) { currentCode.push(line); return; }
 
                 // 2. Table Logic
-                if (trimmed.startsWith('|')) {
-                  currentTable.push(line);
-                  return;
-                } else if (currentTable.length > 0) {
-                  const rows = currentTable.filter(r => !r.includes('---'));
-                  rendered.push(
-                    <div key={`table-${i}`} className="my-10 overflow-hidden rounded-3xl border border-white/5 bg-white/[0.01] shadow-xl overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead><tr className="bg-primary-500/10 border-b border-white/5 text-primary-500">
-                          {rows[0].split('|').filter(c => c.trim()).map((cell, idx) => (<th key={idx} className="p-4 text-left font-bold uppercase tracking-widest text-[10px]">{cell.trim()}</th>))}
-                        </tr></thead>
-                        <tbody>{rows.slice(1).map((row, rIdx) => (<tr key={rIdx} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02]">
-                          {row.split('|').filter(c => c.trim()).map((cell, cIdx) => (<td key={cIdx} className="p-4 text-muted/80">{cell.trim()}</td>))}
-                        </tr>))}</tbody>
-                      </table>
-                    </div>
-                  );
+                if (trimmed.startsWith('|')) { currentTable.push(line); return; } 
+                else if (currentTable.length > 0) {
+                  const rows = currentTable.filter(r => r.includes('|') && !r.includes('---'));
+                  if (rows.length > 0) {
+                    rendered.push(
+                      <div key={`table-${i}`} className="my-10 overflow-hidden rounded-3xl border border-white/5 bg-white/[0.01] shadow-xl overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead><tr className="bg-primary-500/10 border-b border-white/5 text-primary-500">{rows[0].split('|').filter(c => c.trim()).map((cell, idx) => (<th key={idx} className="p-4 text-left font-bold uppercase tracking-widest text-[10px]">{cell.trim()}</th>))}</tr></thead>
+                          <tbody>{rows.slice(1).map((row, rIdx) => (<tr key={rIdx} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02]">{row.split('|').filter(c => c.trim()).map((cell, cIdx) => (<td key={cIdx} className="p-4 text-muted/80">{cell.trim()}</td>))}</tr>))}</tbody>
+                        </table>
+                      </div>
+                    );
+                  }
                   currentTable = [];
                 }
 
                 // 3. Headings, Lists, Paragraphs, Dividers
-                if (trimmed.startsWith('## ')) rendered.push(<h2 key={i} className="text-3xl font-bold mt-16 mb-6 text-white font-outfit">{trimmed.replace('## ', '')}</h2>);
-                else if (trimmed.startsWith('### ')) rendered.push(<h3 key={i} className="text-xl font-bold mt-10 mb-4 text-primary-500 font-outfit">{trimmed.replace('### ', '')}</h3>);
-                else if (trimmed.startsWith('---')) rendered.push(<hr key={i} className="my-12 border-white/10" />);
-                else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) rendered.push(<div key={i} className="flex gap-4 text-muted text-lg my-2 pl-4"><span className="text-primary-500 font-bold mt-1">✓</span><span>{trimmed.replace(/^[-*]\s+/, '')}</span></div>);
+                if (trimmed.startsWith('## ')) rendered.push(<h2 key={`h2-${i}`} className="text-3xl font-bold mt-16 mb-6 text-white font-outfit">{trimmed.replace('## ', '')}</h2>);
+                else if (trimmed.startsWith('### ')) rendered.push(<h3 key={`h3-${i}`} className="text-xl font-bold mt-10 mb-4 text-primary-500 font-outfit">{trimmed.replace('### ', '')}</h3>);
+                else if (trimmed.startsWith('---')) rendered.push(<hr key={`hr-${i}`} className="my-12 border-white/10" />);
+                else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) rendered.push(<div key={`li-${i}`} className="flex gap-4 text-muted text-lg my-2 pl-4"><span className="text-primary-500 font-bold mt-1">✓</span><span>{trimmed.replace(/^[-*]\s+/, '')}</span></div>);
                 else if (trimmed) {
                   const parts = trimmed.split(/(\*\*.*?\*\*|\[.*?\]\(.*?\)|`.*?`)/g);
                   rendered.push(
-                    <p key={i} className="text-muted/90 text-lg md:text-xl leading-relaxed mb-4">
+                    <p key={`p-${i}`} className="text-muted/90 text-lg md:text-xl leading-relaxed mb-4">
                       {parts.map((part, pIdx) => {
                         if (part.startsWith('**') && part.endsWith('**')) return <strong key={pIdx} className="text-white font-bold">{part.slice(2, -2)}</strong>;
                         if (part.startsWith('[') && part.includes('](')) {
@@ -170,8 +161,25 @@ export default async function BlogPostPage({ params }: PageProps) {
                       })}
                     </p>
                   );
-                } else rendered.push(<div key={i} className="h-4" />);
+                } else rendered.push(<div key={`br-${i}`} className="h-4" />);
               });
+
+              // --- FINAL FLUSH (Ensure last block renders) ---
+              if (currentTable.length > 0) {
+                const rows = currentTable.filter(r => r.includes('|') && !r.includes('---'));
+                rendered.push(
+                  <div key="final-table" className="my-10 overflow-hidden rounded-3xl border border-white/5 bg-white/[0.01] shadow-xl overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead><tr className="bg-primary-500/10 border-b border-white/5 text-primary-500">{rows[0].split('|').filter(c => c.trim()).map((cell, idx) => (<th key={idx} className="p-4 text-left font-bold uppercase tracking-widest text-[10px]">{cell.trim()}</th>))}</tr></thead>
+                      <tbody>{rows.slice(1).map((row, rIdx) => (<tr key={rIdx} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02]">{row.split('|').filter(c => c.trim()).map((cell, cIdx) => (<td key={cIdx} className="p-4 text-muted/80">{cell.trim()}</td>))}</tr>))}</tbody>
+                    </table>
+                  </div>
+                );
+              }
+              if (currentCode.length > 0) {
+                rendered.push(<div key="final-code" className="bg-[#0d1117] rounded-3xl overflow-hidden border border-white/5 my-8 shadow-2xl"><pre className="p-8 overflow-x-auto font-mono text-sm text-[#c9d1d9]"><code>{currentCode.join('\n')}</code></pre></div>);
+              }
+
               return rendered;
             })()}
           </div>
