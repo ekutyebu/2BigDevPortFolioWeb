@@ -124,12 +124,21 @@ async function main() {
     "How to Explain Tech to a Non-Technical CEO"
   ];
 
+  // Confirmed working high-quality tech image IDs
+  const techImages = [
+    "1550751827-4bd374c3f58b", "1518770660439-4636190af475", "1550741164-c6f2d70ff22b",
+    "1488590528505-98d2b5aba04b", "1451187580459-43490279c0fa", "1519389950473-47ba0277781c",
+    "1581091226825-a6a2a5aee158", "1504384308090-c894fdcc538d", "1461749280684-dccba630e2f6",
+    "1498050108023-c5249f4df085"
+  ];
+
   for (let i = 0; i < extraTitles.length; i++) {
+    const imgId = techImages[i % techImages.length];
     blogData.push({
         title: extraTitles[i],
         slug: extraTitles[i].toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
         content: `<p>Solving problems like <strong>${extraTitles[i]}</strong> is what makes engineering exciting. In this post, we'll dive deep into the real-world implications and how to implement a stable, high-performance solution.</p>`,
-        image: `https://images.unsplash.com/photo-1550${i+100}51827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1000`
+        image: `https://images.unsplash.com/photo-${imgId}?auto=format&fit=crop&q=80&w=1000`
     });
   }
 
