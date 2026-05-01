@@ -18,16 +18,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       where: { slug: decodedSlug },
     });
 
-    if (!post) return {};
+    if (!post) return { title: "Post Not Found" };
+
+    const description = post.content ? post.content.substring(0, 160).replace(/[#*`]/g, '') : "";
 
     return {
-      title: `${post.title} | 2BigDev Blog`,
-      description: post.content.substring(0, 160),
+      title: `${post.title} | Ekuty Ebu Blog`,
+      description: description,
       openGraph: {
         title: post.title,
-        description: post.content.substring(0, 160),
+        description: description,
         type: "article",
-        publishedTime: post.createdAt.toISOString(),
+        publishedTime: post.createdAt instanceof Date ? post.createdAt.toISOString() : new Date(post.createdAt).toISOString(),
       },
     };
   } catch (error) {

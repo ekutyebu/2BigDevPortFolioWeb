@@ -31,22 +31,21 @@ async function main() {
     const fmText = frontmatterMatch[1];
     const content = fileContent.replace(frontmatterMatch[0], '').trim();
     
-    // Improved Header Parsing
+    // Improved Header Parsing (Case-Insensitive)
     const metadata: any = {};
     fmText.split('\n').forEach((line: string) => {
       const index = line.indexOf(':');
       if (index > -1) {
-        const key = line.slice(0, index).trim();
+        const key = line.slice(0, index).trim().toLowerCase();
         let value = line.slice(index + 1).trim();
-        // Clean up quotes (both single and double)
         value = value.replace(/^["']|["']$/g, '');
         metadata[key] = value;
       }
     });
 
-    // 2. Map fields carefully
+    // 2. Map fields with fallbacks
     const title = metadata.title || slug.split('-').join(' ');
-    const coverImage = metadata.coverImage || '';
+    const coverImage = metadata.coverimage || metadata.image || metadata.cover_image || '';
     const date = metadata.date ? new Date(metadata.date) : new Date();
 
     await prisma.post.upsert({
