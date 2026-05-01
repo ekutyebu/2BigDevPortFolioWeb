@@ -88,8 +88,8 @@ export default async function BlogPostPage({ params }: PageProps) {
         </div>
 
         <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-outfit prose-p:text-muted prose-p:leading-relaxed">
-          {/* Universal State-Machine Engine v6 (Final) */}
-          <div className="space-y-4">
+          {/* Masterclass Rendering Engine v7 */}
+          <div className="space-y-6">
             {(() => {
               if (!post.content) return <p className="text-muted italic">This post has no content yet.</p>;
 
@@ -104,34 +104,53 @@ export default async function BlogPostPage({ params }: PageProps) {
 
                 if (mode === 'code') {
                   rendered.push(
-                    <div key={key} className="relative group my-10">
-                      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                        <button onClick={() => navigator.clipboard.writeText(content)} className="bg-primary-500/20 hover:bg-primary-500/40 backdrop-blur-md text-primary-400 text-xs font-bold px-3 py-1.5 rounded-lg border border-primary-500/20 transition-all">Copy</button>
+                    <div key={key} className="relative my-10 group">
+                      <div className="absolute top-4 right-4 z-20">
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(content);
+                            alert("Code copied to clipboard!");
+                          }} 
+                          className="bg-primary-500 hover:bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg shadow-lg transition-all active:scale-95"
+                        >
+                          Copy Code
+                        </button>
                       </div>
-                      <div className="bg-[#0d1117] rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
-                        <div className="px-6 py-3 bg-white/5 border-b border-white/5 flex justify-between items-center"><div className="flex gap-2"><div className="w-3 h-3 rounded-full bg-[#ff5f56]" /><div className="w-3 h-3 rounded-full bg-[#ffbd2e]" /><div className="w-3 h-3 rounded-full bg-[#27c93f]" /></div></div>
-                        <pre className="p-8 overflow-x-auto font-mono text-sm text-[#c9d1d9] leading-relaxed"><code>{content}</code></pre>
+                      <div className="bg-[#0d1117] rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl">
+                        <div className="px-6 py-4 bg-white/5 border-b border-white/5 flex items-center gap-2">
+                           <div className="w-3 h-3 rounded-full bg-[#ff5f56]" /><div className="w-3 h-3 rounded-full bg-[#ffbd2e]" /><div className="w-3 h-3 rounded-full bg-[#27c93f]" />
+                           <span className="text-[10px] text-muted font-bold ml-2 uppercase tracking-widest opacity-50">Terminal</span>
+                        </div>
+                        <pre className="p-8 overflow-x-auto font-mono text-sm text-[#c9d1d9] leading-relaxed selection:bg-primary-500/30">
+                          <code>{content}</code>
+                        </pre>
                       </div>
                     </div>
                   );
                 } else if (mode === 'table') {
-                  const rows = buffer.filter(r => r.includes('|') && !r.includes('---'));
+                  const rows = buffer.filter(r => r.includes('|') && !r.trim().startsWith('|---'));
                   if (rows.length > 0) {
                     rendered.push(
-                      <div key={key} className="my-10 overflow-hidden rounded-3xl border border-white/5 bg-white/[0.01] shadow-xl overflow-x-auto">
+                      <div key={key} className="my-12 overflow-hidden rounded-[2rem] border border-white/5 bg-white/[0.02] shadow-2xl overflow-x-auto">
                         <table className="w-full text-sm">
-                          <thead><tr className="bg-primary-500/10 border-b border-white/5 text-primary-500">{rows[0].split('|').filter(c => c.trim()).map((cell, idx) => (<th key={idx} className="p-5 text-left font-black uppercase tracking-widest text-[10px]">{cell.trim()}</th>))}</tr></thead>
-                          <tbody>{rows.slice(1).map((row, rIdx) => (<tr key={rIdx} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors">{row.split('|').filter(c => c.trim()).map((cell, cIdx) => (<td key={cIdx} className="p-5 text-muted/80">{cell.trim()}</td>))}</tr>))}</tbody>
+                          <thead><tr className="bg-primary-500/10 border-b border-white/5 text-primary-500">
+                            {rows[0].split('|').filter(c => c.trim()).map((cell, idx) => (<th key={idx} className="p-6 text-left font-black uppercase tracking-widest text-[10px]">{cell.trim()}</th>))}
+                          </tr></thead>
+                          <tbody>{rows.slice(1).map((row, rIdx) => (<tr key={rIdx} className="border-b border-white/5 last:border-0 hover:bg-white/[0.03] transition-colors">
+                            {row.split('|').filter(c => c.trim()).map((cell, cIdx) => (<td key={cIdx} className="p-6 text-muted/80 font-medium">{cell.trim()}</td>))}
+                          </tr>))}</tbody>
                         </table>
                       </div>
                     );
                   }
                 } else if (mode === 'list') {
                   rendered.push(
-                    <ul key={key} className="space-y-4 my-8">
+                    <ul key={key} className="space-y-5 my-10 pl-2">
                       {buffer.map((li, idx) => (
-                        <li key={idx} className="flex gap-4 text-muted text-lg">
-                          <span className="text-primary-500 font-bold mt-1">✓</span>
+                        <li key={idx} className="flex gap-5 text-muted text-lg md:text-xl leading-relaxed">
+                          <div className="w-6 h-6 rounded-full bg-primary-500/10 flex items-center justify-center flex-shrink-0 mt-1">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary-500" />
+                          </div>
                           <span>{li.replace(/^[-*]\s+/, '')}</span>
                         </li>
                       ))}
@@ -140,21 +159,22 @@ export default async function BlogPostPage({ params }: PageProps) {
                 } else {
                   buffer.forEach((line, idx) => {
                     const t = line.trim();
-                    if (!t) return;
-                    if (t.startsWith('## ')) rendered.push(<h2 key={`${key}-${idx}`} className="text-3xl font-bold mt-16 mb-8 text-white font-outfit">{t.replace('## ', '')}</h2>);
-                    else if (t.startsWith('### ')) rendered.push(<h3 key={`${key}-${idx}`} className="text-xl font-bold mt-10 mb-6 text-primary-500 font-outfit">{t.replace('### ', '')}</h3>);
-                    else if (t.startsWith('---')) rendered.push(<hr key={`${key}-${idx}`} className="my-12 border-white/10" />);
+                    if (!t) return rendered.push(<div key={`${key}-${idx}`} className="h-6" />);
+                    
+                    if (t.startsWith('## ')) rendered.push(<h2 key={`${key}-${idx}`} className="text-3xl md:text-4xl font-bold mt-20 mb-10 text-white font-outfit border-l-4 border-primary-500 pl-6 leading-tight">{t.replace('## ', '')}</h2>);
+                    else if (t.startsWith('### ')) rendered.push(<h3 key={`${key}-${idx}`} className="text-xl md:text-2xl font-bold mt-12 mb-6 text-primary-500 font-outfit">{t.replace('### ', '')}</h3>);
+                    else if (t.startsWith('---')) rendered.push(<hr key={`${key}-${idx}`} className="my-16 border-white/5" />);
                     else {
                       const parts = t.split(/(\*\*.*?\*\*|\[.*?\]\(.*?\)|`.*?`)/g);
                       rendered.push(
-                        <p key={`${key}-${idx}`} className="text-muted/90 text-lg md:text-xl leading-relaxed mb-6">
+                        <p key={`${key}-${idx}`} className="text-muted/90 text-lg md:text-xl leading-[1.8] mb-8 font-medium">
                           {parts.map((p, pIdx) => {
-                            if (p.startsWith('**') && p.endsWith('**')) return <strong key={pIdx} className="text-white font-bold">{p.slice(2, -2)}</strong>;
+                            if (p.startsWith('**') && p.endsWith('**')) return <strong key={pIdx} className="text-white font-black">{p.slice(2, -2)}</strong>;
                             if (p.startsWith('[') && p.includes('](')) {
                               const m = p.match(/\[(.*?)\]\((.*?)\)/);
-                              if (m) return <a key={pIdx} href={m[2]} target="_blank" className="text-primary-500 font-bold border-b-2 border-primary-500/10 hover:border-primary-500 hover:bg-primary-500/5 px-1 rounded transition-all">{m[1]}</a>;
+                              if (m) return <a key={pIdx} href={m[2]} target="_blank" className="text-primary-500 font-bold border-b-2 border-primary-500/20 hover:border-primary-500 hover:bg-primary-500/5 px-1 rounded transition-all">{m[1]}</a>;
                             }
-                            if (p.startsWith('`') && p.endsWith('`')) return <code key={pIdx} className="bg-primary-500/10 px-2 py-0.5 rounded text-primary-400 font-mono text-sm">{p.slice(1, -1)}</code>;
+                            if (p.startsWith('`') && p.endsWith('`')) return <code key={pIdx} className="bg-primary-500/10 border border-primary-500/20 px-2 py-0.5 rounded-lg text-primary-400 font-mono text-sm mx-1">{p.slice(1, -1)}</code>;
                             return p;
                           })}
                         </p>
