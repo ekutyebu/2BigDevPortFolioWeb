@@ -14,11 +14,11 @@ const Navbar = () => {
   useEffect(() => setMounted(true), []);
 
   const navLinks = [
-    { name: "About", href: "#about" },
-    { name: "Projects", href: "#projects" },
-    { name: "Skills", href: "#skills" },
+    { name: "About", href: "/about" },
+    { name: "Projects", href: "/projects" },
+    { name: "Skills", href: "/skills" },
     { name: "Blog", href: "/blog" },
-    { name: "Contact", href: "#contact" },
+    { name: "Contact", href: "/contact" },
   ];
 
   if (!mounted) return null;
@@ -54,7 +54,7 @@ const Navbar = () => {
               {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             <Link
-              href="#contact"
+              href="/contact"
               className="bg-primary-500 hover:bg-primary-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-all hover:shadow-lg hover:shadow-primary-500/25"
             >
               Hire Me
@@ -100,7 +100,7 @@ const Navbar = () => {
                 </Link>
               ))}
               <Link
-                href="#contact"
+                href="/contact"
                 onClick={() => setIsMenuOpen(false)}
                 className="block w-full text-center bg-primary-500 text-white px-5 py-3 rounded-xl font-semibold transition-all"
               >

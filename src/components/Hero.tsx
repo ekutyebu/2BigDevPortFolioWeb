@@ -52,14 +52,14 @@ const Hero = () => {
             className="flex flex-wrap gap-6"
           >
             <Link
-              href="#projects"
+              href="/projects"
               className="group bg-primary-500 hover:bg-primary-600 text-white px-8 py-4 rounded-2xl font-bold transition-all flex items-center gap-2 hover:shadow-2xl hover:shadow-primary-500/30"
             >
               View My Work
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
-              href="#contact"
+              href="/contact"
               className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 px-8 py-4 rounded-2xl font-bold hover:border-primary-500 transition-all"
             >
               Get In Touch
@@ -75,9 +75,9 @@ const Hero = () => {
           >
             {[
               { icon: Code2, label: "Clean Code", value: "100%" },
-              { icon: Trophy, label: "Projects", value: "50+" },
+              { icon: Trophy, label: "Projects", value: "6+" },
               { icon: Sparkles, label: "UI Design", value: "Premium" },
-              { icon: ArrowRight, label: "Experience", value: "5+ Years" },
+              { icon: ArrowRight, label: "Experience", value: "1+ Year" },
             ].map((stat, i) => (
               <div key={i} className="flex flex-col gap-1">
                 <div className="flex items-center gap-2 text-primary-500 mb-1">
