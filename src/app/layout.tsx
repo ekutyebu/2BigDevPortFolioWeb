@@ -40,6 +40,11 @@ export const metadata: Metadata = {
   },
   verification: {
     google: "google2199dc2362a1a338",
+    yandex: "yandex_verification_code",
+    me: "ebubarna1@gmail.com",
+    other: {
+      "msvalidate.01": "bing_verification_code",
+    }
   },
   robots: {
     index: true,
