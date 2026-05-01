@@ -6,9 +6,14 @@ import ContactForm from "@/components/ContactForm";
 import { prisma } from "@/lib/prisma";
 
 export default async function Home() {
-  const projects = await prisma.project.findMany({
-    orderBy: { order: "asc" },
-  });
+  let projects = [];
+  try {
+    projects = await prisma.project.findMany({
+      orderBy: { order: "asc" },
+    });
+  } catch (error) {
+    console.error("Home page project fetch failed:", error);
+  }
 
   return (
     <div className="flex flex-col">

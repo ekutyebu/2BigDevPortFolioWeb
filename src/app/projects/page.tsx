@@ -4,9 +4,14 @@ import { prisma } from "@/lib/prisma";
 import Projects from "@/components/Projects";
 
 export default async function ProjectsPage() {
-  const projects = await prisma.project.findMany({
-    orderBy: { order: "asc" },
-  });
+  let projects = [];
+  try {
+    projects = await prisma.project.findMany({
+      orderBy: { order: "asc" },
+    });
+  } catch (error) {
+    console.error("Projects page fetch failed:", error);
+  }
 
   return (
     <main className="pt-32">
