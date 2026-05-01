@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Calendar, ChevronLeft } from "lucide-react";
@@ -10,31 +11,41 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const decodedSlug = decodeURIComponent(params.slug);
-  const post = await prisma.post.findUnique({
-    where: { slug: decodedSlug },
-  });
+  try {
+    const decodedSlug = decodeURIComponent(params.slug);
+    const post = await prisma.post.findUnique({
+      where: { slug: decodedSlug },
+    });
 
-  if (!post) return {};
+    if (!post) return {};
 
-  return {
-    title: `${post.title} | 2BigDev Blog`,
-    description: post.content.substring(0, 160),
-    openGraph: {
-      title: post.title,
+    return {
+      title: `${post.title} | 2BigDev Blog`,
       description: post.content.substring(0, 160),
-      type: "article",
-      publishedTime: post.createdAt.toISOString(),
-    },
-  };
+      openGraph: {
+        title: post.title,
+        description: post.content.substring(0, 160),
+        type: "article",
+        publishedTime: post.createdAt.toISOString(),
+      },
+    };
+  } catch (error) {
+    return { title: "Blog Post | 2BigDev" };
+  }
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
   const decodedSlug = decodeURIComponent(params.slug);
   console.log("DEBUG: Fetching post with decoded slug:", decodedSlug);
-  const post = await prisma.post.findUnique({
-    where: { slug: decodedSlug },
-  });
+  
+  let post = null;
+  try {
+    post = await prisma.post.findUnique({
+      where: { slug: decodedSlug },
+    });
+  } catch (error) {
+    console.error("DEBUG: Prisma Post Fetch Error:", error);
+  }
 
   if (!post) {
     console.error("DEBUG: Post not found for slug:", decodedSlug);

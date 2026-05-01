@@ -13,12 +13,12 @@ async function getPosts() {
 }
 
 export default async function BlogPage() {
-  let posts = [];
+  let posts: any[] = [];
   try {
     posts = await getPosts();
   } catch (error) {
     console.error("DEBUG: Prisma Query Error:", error);
-    throw error;
+    // Gracefully handle error instead of crashing the page
   }
 
   return (
