@@ -36,18 +36,19 @@ export default async function Home() {
               </div>
             </div>
             <div>
-              <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-primary-500 mb-4">About Me</h2>
-              <h3 className="heading-lg font-outfit">Junior Full Stack <br />Developer & Engineer</h3>
+              <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-primary-500 mb-4">The Mission</h2>
+              <h3 className="heading-lg font-outfit">Global Full-Stack <br />Engineer & AI Architect</h3>
               <p className="text-xl text-muted mt-8 leading-relaxed">
-                Hi, I&apos;m <span className="text-primary-500 font-bold">Basti</span>. I&apos;m a Junior Full Stack Developer 
-                based in Douala, Cameroon, with over a year of hands-on experience building and 
-                shipping real web applications. 
+                I am <span className="text-primary-500 font-bold">Basti</span>. I build high-performance, 
+                planet-scale digital infrastructure. My focus is on the intersection of 
+                <span className="font-bold"> Generative AI</span>, <span className="font-bold">Edge Computing</span>, 
+                and <span className="font-bold">Cloud-Native Architecture</span>.
               </p>
               <p className="text-lg text-muted mt-6 leading-relaxed">
-                I use React, Next.js, Node.js, and Python to create modern, responsive, and 
-                fast websites. I&apos;ve built 6 live projects from scratch — including 
-                e-commerce marketplaces, corporate sites, and NLP tools. I use AI daily 
-                to code faster, but I understand every line I ship.
+                From architecting multi-vendor e-commerce engines to deploying autonomous NLP agents, 
+                I deliver code that competes at the highest global standards. I leverage 
+                industry-leading tools like Debian for stability and Windows for high-speed 
+                production workflows to ensure zero-downtime scalability for every project.
               </p>
               <div className="mt-10 grid grid-cols-2 gap-6">
                 <div>
