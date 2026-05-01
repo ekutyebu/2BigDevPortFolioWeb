@@ -8,7 +8,12 @@ import { getPrisma } from "@/lib/prisma";
 export default async function Home() {
   let projects: any[] = [];
   let errorMsg = null;
+  let dbName = "Unknown";
+  
   try {
+    const dbUrl = process.env.DATABASE_URL || "";
+    dbName = dbUrl.split('@')[1]?.split('.')[0] || "No URL Found";
+    
     const prisma = getPrisma();
     projects = await prisma.project.findMany({
       orderBy: { order: "asc" },
@@ -88,10 +93,16 @@ export default async function Home() {
           <div className="glass p-8 rounded-3xl border-red-500/50 text-center">
              <h3 className="text-red-500 font-bold mb-2">Live Debugger: Database Error</h3>
              <p className="text-sm text-muted">{errorMsg}</p>
+             <p className="text-[10px] text-muted mt-4 uppercase tracking-widest">Target: {dbName}</p>
           </div>
         </div>
       ) : (
-        <Projects projects={projects} />
+        <>
+          <div className="text-center text-[10px] text-muted uppercase tracking-[0.3em] opacity-30 mt-8">
+            Connected to: {dbName} | Projects Loaded: {projects.length}
+          </div>
+          <Projects projects={projects} />
+        </>
       )}
 
       {/* Testimonials Section */}
