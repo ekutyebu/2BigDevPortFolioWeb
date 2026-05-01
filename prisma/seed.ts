@@ -136,11 +136,11 @@ async function main() {
     let imgId = techImages[i % techImages.length];
     
     // Manual overrides for specific posts that had issues
-    if (extraTitles[i].includes("Edge Functions")) {
+    if (extraTitles[i].toLowerCase().includes("edge functions")) {
       imgId = "1451187580459-43490279c0fa"; // Satellite/Edge themed
     }
-    if (extraTitles[i].includes("API Design")) {
-      imgId = "1558494949-ef8b5655d936"; // Data/Server themed
+    if (extraTitles[i].toLowerCase().includes("api design")) {
+      imgId = "1517694712202-14dd9538aa97"; // Monitor/Code themed
     }
 
     blogData.push({
