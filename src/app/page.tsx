@@ -24,8 +24,8 @@ export default async function Home() {
                 </div>
               </div>
               <div className="absolute -bottom-6 -right-6 glass p-6 rounded-2xl hidden md:block">
-                <p className="font-bold text-2xl">5+</p>
-                <p className="text-xs text-muted font-bold uppercase tracking-widest">Years Experience</p>
+                <p className="font-bold text-2xl">1+</p>
+                <p className="text-xs text-muted font-bold uppercase tracking-widest">Year Experience</p>
               </div>
             </div>
             <div>
