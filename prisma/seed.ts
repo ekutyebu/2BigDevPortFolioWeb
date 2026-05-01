@@ -133,7 +133,16 @@ async function main() {
   ];
 
   for (let i = 0; i < extraTitles.length; i++) {
-    const imgId = techImages[i % techImages.length];
+    let imgId = techImages[i % techImages.length];
+    
+    // Manual overrides for specific posts that had issues
+    if (extraTitles[i].includes("Edge Functions")) {
+      imgId = "1451187580459-43490279c0fa"; // Satellite/Edge themed
+    }
+    if (extraTitles[i].includes("API Design")) {
+      imgId = "1558494949-ef8b5655d936"; // Data/Server themed
+    }
+
     blogData.push({
         title: extraTitles[i],
         slug: extraTitles[i].toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
