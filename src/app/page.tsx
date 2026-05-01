@@ -2,8 +2,13 @@ import Hero from "@/components/Hero";
 import Projects from "@/components/Projects";
 import Skills from "@/components/Skills";
 import ContactForm from "@/components/ContactForm";
+import { prisma } from "@/lib/prisma";
 
-export default function Home() {
+export default async function Home() {
+  const projects = await prisma.project.findMany({
+    orderBy: { order: "asc" },
+  });
+
   return (
     <div className="flex flex-col">
       <Hero />
@@ -66,7 +71,7 @@ export default function Home() {
       </section>
 
       <Skills />
-      <Projects />
+      <Projects projects={projects} />
       {/* Testimonials Section */}
       <section className="py-24 overflow-hidden">
         <div className="section-container">

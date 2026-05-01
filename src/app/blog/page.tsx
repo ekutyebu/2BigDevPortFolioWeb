@@ -39,7 +39,11 @@ export default async function BlogPage() {
             {posts.map((post) => (
               <Link key={post.id} href={`/blog/${post.slug}`} className="group">
                 <div className="relative aspect-video rounded-3xl overflow-hidden mb-6 bg-primary-500/10">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary-500/20 to-accent-500/20 group-hover:scale-110 transition-transform duration-700" />
+                  {post.image ? (
+                    <img src={post.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={post.title} />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary-500/20 to-accent-500/20 group-hover:scale-110 transition-transform duration-700" />
+                  )}
                 </div>
                 <div className="flex items-center gap-4 text-sm text-primary-500 font-bold uppercase tracking-widest mb-4">
                   <Calendar size={14} />

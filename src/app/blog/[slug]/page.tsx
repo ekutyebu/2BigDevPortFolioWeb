@@ -64,7 +64,11 @@ export default async function BlogPostPage({ params }: PageProps) {
         </h1>
 
         <div className="aspect-video rounded-3xl bg-primary-500/10 mb-12 overflow-hidden relative">
-           <div className="absolute inset-0 bg-gradient-to-br from-primary-500/20 to-accent-500/20" />
+           {post.image ? (
+             <img src={post.image} className="w-full h-full object-cover" alt={post.title} />
+           ) : (
+             <div className="absolute inset-0 bg-gradient-to-br from-primary-500/20 to-accent-500/20" />
+           )}
         </div>
 
         <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-outfit prose-p:text-muted prose-p:leading-relaxed">
