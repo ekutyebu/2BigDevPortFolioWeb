@@ -87,7 +87,7 @@ export default async function BlogPostPage({ params }: PageProps) {
         </div>
 
         <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-outfit prose-p:text-muted prose-p:leading-relaxed">
-          {/* Robust Custom Markdown Engine v2 */}
+          {/* Pro Rendering Engine v3 (Crash-Proof + High Fidelity) */}
           <div className="space-y-8">
             {(() => {
               if (!post.content) return <p className="text-muted">This post has no content yet.</p>;
@@ -97,79 +97,64 @@ export default async function BlogPostPage({ params }: PageProps) {
                 const trimmed = block.trim();
                 if (!trimmed) return null;
                 
-                // 1. Handle Code Blocks (```js ... ```)
+                // 1. Code Blocks
                 if (trimmed.startsWith('```')) {
                   const lines = trimmed.split('\n');
-                  const lang = lines[0].replace(/```/g, '').trim() || 'code';
                   const code = lines.slice(1, lines[lines.length - 1].startsWith('```') ? -1 : undefined).join('\n');
                   return (
-                    <div key={i} className="relative group my-8">
-                      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                        <button 
-                          onClick={() => navigator.clipboard.writeText(code)}
-                          className="bg-primary-500/20 hover:bg-primary-500/40 backdrop-blur-md text-primary-400 text-xs font-bold px-3 py-1.5 rounded-lg border border-primary-500/20 transition-all"
-                        >
-                          Copy
-                        </button>
-                      </div>
-                      <div className="bg-[#0d1117] rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
-                        <div className="px-6 py-3 bg-white/5 border-b border-white/5 text-[10px] uppercase tracking-[0.2em] font-black text-muted flex justify-between items-center">
-                          <span>{lang}</span>
+                    <div key={i} className="bg-[#0d1117] rounded-3xl overflow-hidden border border-white/5 my-8 shadow-2xl">
+                       <div className="px-6 py-3 bg-white/5 border-b border-white/5 flex justify-between items-center">
                           <div className="flex gap-2">
                             <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
                             <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
                             <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
                           </div>
                         </div>
-                        <pre className="p-8 overflow-x-auto font-mono text-sm leading-relaxed text-[#c9d1d9]">
-                          <code>{code}</code>
-                        </pre>
-                      </div>
+                      <pre className="p-8 overflow-x-auto font-mono text-sm text-[#c9d1d9] leading-relaxed">
+                        <code>{code}</code>
+                      </pre>
                     </div>
                   );
                 }
 
-                // 2. Handle Tables (| col |)
+                // 2. Tables
                 if (trimmed.startsWith('|')) {
                   const rows = trimmed.split('\n').filter(r => r.trim() && !r.includes('---'));
-                  if (rows.length < 2) return null;
                   return (
-                    <div key={i} className="my-10 overflow-hidden rounded-3xl border border-white/5 shadow-2xl bg-white/[0.01]">
-                      <div className="overflow-x-auto">
-                        <table className="w-full border-collapse text-sm">
-                          <thead>
-                            <tr className="bg-white/5 border-b border-white/5">
-                              {rows[0].split('|').filter(c => c.trim()).map((cell, idx) => (
-                                <th key={idx} className="p-5 text-left font-black text-primary-500 uppercase tracking-widest text-[11px]">{cell.trim()}</th>
+                    <div key={i} className="my-10 overflow-x-auto rounded-3xl border border-white/5 bg-white/[0.01] shadow-xl">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="bg-primary-500/10 border-b border-white/5 text-primary-500">
+                            {rows[0].split('|').filter(c => c.trim()).map((cell, idx) => (
+                              <th key={idx} className="p-5 text-left font-black uppercase tracking-widest text-[10px]">{cell.trim()}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rows.slice(1).map((row, rIdx) => (
+                            <tr key={rIdx} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02]">
+                              {row.split('|').filter(c => c.trim()).map((cell, cIdx) => (
+                                <td key={cIdx} className="p-5 text-muted/80">{cell.trim()}</td>
                               ))}
                             </tr>
-                          </thead>
-                          <tbody>
-                            {rows.slice(1).map((row, rIdx) => (
-                              <tr key={rIdx} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors">
-                                {row.split('|').filter(c => c.trim()).map((cell, cIdx) => (
-                                  <td key={cIdx} className="p-5 text-muted/80">{cell.trim()}</td>
-                                ))}
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   );
                 }
 
-                // 3. Handle Headings
-                if (trimmed.startsWith('## ')) return <h2 key={i} className="text-3xl md:text-4xl font-bold font-outfit mt-20 mb-8 text-white">{trimmed.replace('## ', '')}</h2>;
-                if (trimmed.startsWith('### ')) return <h3 key={i} className="text-xl md:text-2xl font-bold font-outfit mt-12 mb-6 text-primary-500">{trimmed.replace('### ', '')}</h3>;
+                // 3. Headings
+                if (trimmed.startsWith('## ')) return <h2 key={i} className="text-3xl font-bold mt-20 mb-8 text-white font-outfit">{trimmed.replace('## ', '')}</h2>;
+                if (trimmed.startsWith('### ')) return <h3 key={i} className="text-xl font-bold mt-12 mb-6 text-primary-500 font-outfit">{trimmed.replace('### ', '')}</h3>;
 
-                // 4. Handle Lists (supports - and *)
+                // 4. Lists
                 if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
                   return (
                     <ul key={i} className="space-y-4 my-8">
                       {trimmed.split('\n').map((li, liIdx) => (
                         <li key={liIdx} className="flex gap-4 text-muted text-lg">
-                          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary-500/10 flex items-center justify-center text-primary-500 text-[10px] font-bold mt-0.5">✓</span>
+                          <span className="text-primary-500 font-bold mt-1">✓</span>
                           <span>{li.replace(/^[-*]\s+/, '')}</span>
                         </li>
                       ))}
@@ -177,26 +162,25 @@ export default async function BlogPostPage({ params }: PageProps) {
                   );
                 }
 
-                // 5. Handle Images (![alt](url))
-                const imgMatch = trimmed.match(/!\[(.*?)\]\((.*?)\)/);
-                if (imgMatch) {
-                   return (
-                     <div key={i} className="my-12 rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
-                       <img src={imgMatch[2]} alt={imgMatch[1]} className="w-full h-auto" />
-                       {imgMatch[1] && <p className="p-4 text-center text-sm text-muted bg-white/5 italic">{imgMatch[1]}</p>}
-                     </div>
-                   );
-                }
-
-                // 6. Handle Normal Paragraphs with Inline Formatting
-                const formatted = trimmed
-                  .replace(/\*\*\*(.*?)\*\*\*/g, '<strong class="text-primary-400 font-bold">$1</strong>')
-                  .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>')
-                  .replace(/__(.*?)__/g, '<strong class="text-white font-bold">$1</strong>')
-                  .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" class="text-primary-500 font-bold border-b-2 border-primary-500/10 hover:border-primary-500 hover:bg-primary-500/5 px-1 rounded transition-all">$1</a>')
-                  .replace(/`(.*?)`/g, '<code class="bg-primary-500/10 px-2 py-0.5 rounded-md font-mono text-primary-400 text-sm">$1</code>');
-
-                return <p key={i} className="text-muted/90 text-lg md:text-xl leading-relaxed mb-8" dangerouslySetInnerHTML={{ __html: formatted }} />;
+                // 5. Normal Paragraphs (With Safe Inline Formatting)
+                const parts = trimmed.split(/(\*\*.*?\*\*|\[.*?\]\(.*?\)|`.*?`)/g);
+                return (
+                  <p key={i} className="text-muted/90 text-lg md:text-xl leading-relaxed mb-8">
+                    {parts.map((part, pIdx) => {
+                      if (part.startsWith('**') && part.endsWith('**')) {
+                        return <strong key={pIdx} className="text-white font-bold">{part.slice(2, -2)}</strong>;
+                      }
+                      if (part.startsWith('[') && part.includes('](')) {
+                        const match = part.match(/\[(.*?)\]\((.*?)\)/);
+                        if (match) return <a key={pIdx} href={match[2]} target="_blank" className="text-primary-500 font-bold border-b border-primary-500/20 hover:border-primary-500 transition-all">{match[1]}</a>;
+                      }
+                      if (part.startsWith('`') && part.endsWith('`')) {
+                        return <code key={pIdx} className="bg-primary-500/10 px-2 py-0.5 rounded text-primary-400 font-mono text-sm">{part.slice(1, -1)}</code>;
+                      }
+                      return part;
+                    })}
+                  </p>
+                );
               });
             })()}
           </div>
