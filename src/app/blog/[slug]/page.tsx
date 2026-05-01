@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Calendar, ChevronLeft } from "lucide-react";
 import Link from "next/link";
@@ -12,6 +12,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   try {
+    const prisma = getPrisma();
     const decodedSlug = decodeURIComponent(params.slug);
     const post = await prisma.post.findUnique({
       where: { slug: decodedSlug },
@@ -40,6 +41,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   
   let post = null;
   try {
+    const prisma = getPrisma();
     post = await prisma.post.findUnique({
       where: { slug: decodedSlug },
     });

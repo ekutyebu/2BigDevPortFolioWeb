@@ -3,12 +3,13 @@ import Hero from "@/components/Hero";
 import Projects from "@/components/Projects";
 import Skills from "@/components/Skills";
 import ContactForm from "@/components/ContactForm";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 export default async function Home() {
   let projects: any[] = [];
   let errorMsg = null;
   try {
+    const prisma = getPrisma();
     projects = await prisma.project.findMany({
       orderBy: { order: "asc" },
     });

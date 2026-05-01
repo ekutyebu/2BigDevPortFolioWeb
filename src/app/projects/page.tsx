@@ -1,11 +1,12 @@
 export const dynamic = "force-dynamic";
 import React from "react";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import Projects from "@/components/Projects";
 
 export default async function ProjectsPage() {
   let projects: any[] = [];
   try {
+    const prisma = getPrisma();
     projects = await prisma.project.findMany({
       orderBy: { order: "asc" },
     });

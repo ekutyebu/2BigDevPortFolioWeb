@@ -1,9 +1,10 @@
 export const dynamic = "force-dynamic";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Calendar, ArrowRight } from "lucide-react";
 
 async function getPosts() {
+  const prisma = getPrisma();
   const posts = await prisma.post.findMany({
     where: { published: true },
     orderBy: { createdAt: "desc" },
