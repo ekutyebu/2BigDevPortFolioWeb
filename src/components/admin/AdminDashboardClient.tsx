@@ -16,12 +16,22 @@ export default function AdminDashboardClient({ initialPosts, initialProjects }: 
   // Form States
   const [postData, setPostData] = useState({ title: "", slug: "", content: "", image: "", published: true });
   const [projectData, setProjectData] = useState({ title: "", description: "", image: "", tags: "", link: "", github: "", order: 0 });
+  const [isPreview, setIsPreview] = useState(false);
 
   const resetForm = () => {
     setPostData({ title: "", slug: "", content: "", image: "", published: true });
     setProjectData({ title: "", description: "", image: "", tags: "", link: "", github: "", order: 0 });
     setIsAdding(false);
     setEditingItem(null);
+    setIsPreview(false);
+  };
+
+  const handleTitleChange = (val: string) => {
+    setPostData({ 
+      ...postData, 
+      title: val, 
+      slug: val.toLowerCase().replace(/ /g, '-').replace(/[^\w-]/g, '') 
+    });
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -84,6 +94,46 @@ export default function AdminDashboardClient({ initialPosts, initialProjects }: 
     setIsAdding(true);
   };
 
+  // --- RENDERER ENGINE (Same as Blog Page) ---
+  const renderMarkdown = (content: string) => {
+    const lines = content.split('\n');
+    const rendered: any[] = [];
+    let buffer: string[] = [];
+    let mode: 'text' | 'code' | 'table' | 'list' = 'text';
+
+    const flush = (key: string) => {
+      if (buffer.length === 0) return;
+      const c = buffer.join('\n');
+      if (mode === 'code') {
+        rendered.push(<div key={key} className="bg-black p-4 rounded-xl my-4 font-mono text-sm text-green-400 overflow-x-auto"><pre><code>{c}</code></pre></div>);
+      } else if (mode === 'table') {
+        rendered.push(<div key={key} className="border border-white/10 rounded-xl my-4 p-4 text-xs font-mono">{c}</div>);
+      } else if (mode === 'list') {
+        rendered.push(<ul key={key} className="space-y-1 my-4">{buffer.map((l, idx) => <li key={idx} className="flex gap-2 text-sm text-muted"><span>•</span>{l.replace(/^[-*]\s+/, '')}</li>)}</ul>);
+      } else {
+        buffer.forEach((l, idx) => {
+          const t = l.trim();
+          if (t.startsWith('## ')) rendered.push(<h2 key={`${key}-${idx}`} className="text-xl font-bold mt-6 mb-2 text-white">{t.replace('## ', '')}</h2>);
+          else if (t.startsWith('### ')) rendered.push(<h3 key={`${key}-${idx}`} className="text-lg font-bold mt-4 mb-2 text-primary-500">{t.replace('### ', '')}</h3>);
+          else if (t) rendered.push(<p key={`${key}-${idx}`} className="mb-2 text-sm text-muted leading-relaxed">{t}</p>);
+        });
+      }
+      buffer = [];
+    };
+
+    lines.forEach((line, i) => {
+      const t = line.trim();
+      if (t.startsWith('```')) {
+        if (mode !== 'code') { flush(`pre-${i}`); mode = 'code'; } else { flush(`post-${i}`); mode = 'text'; }
+      } else if (mode === 'code') buffer.push(line);
+      else if (t.startsWith('|')) { if (mode !== 'table') { flush(`pre-${i}`); mode = 'table'; } buffer.push(line); }
+      else if (t.startsWith('- ')) { if (mode !== 'list') { flush(`pre-${i}`); mode = 'list'; } buffer.push(line); }
+      else { if (mode !== 'text') { flush(`pre-${i}`); mode = 'text'; } buffer.push(line); }
+    });
+    flush('final');
+    return rendered;
+  };
+
   return (
     <div className="space-y-12">
       {/* Tabs */}
@@ -109,57 +159,79 @@ export default function AdminDashboardClient({ initialPosts, initialProjects }: 
             <h2 className="text-2xl font-bold font-outfit">
               {editingItem ? `Edit ${activeTab === 'posts' ? 'Post' : 'Project'}` : `New ${activeTab === 'posts' ? 'Post' : 'Project'}`}
             </h2>
-            <button onClick={resetForm} className="text-muted hover:text-red-500">
-              <X size={24} />
-            </button>
+            <div className="flex items-center gap-4">
+              {activeTab === "posts" && (
+                <button 
+                  onClick={() => setIsPreview(!isPreview)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${isPreview ? 'bg-primary-500 border-primary-500 text-white' : 'border-white/10 text-muted'}`}
+                >
+                  {isPreview ? "Editing Mode" : "Live Preview"}
+                </button>
+              )}
+              <button onClick={resetForm} className="text-muted hover:text-red-500">
+                <X size={24} />
+              </button>
+            </div>
           </div>
 
           <form onSubmit={handleSave} className="space-y-6">
             {activeTab === "posts" ? (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              isPreview ? (
+                <div className="bg-white/5 p-8 rounded-2xl border border-white/5 min-h-[400px]">
+                  <div className="mb-8">
+                    <h1 className="text-3xl font-bold mb-2">{postData.title || "Untiled Post"}</h1>
+                    <p className="text-sm text-primary-500 font-mono">{postData.slug}</p>
+                  </div>
+                  {renderMarkdown(postData.content)}
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-bold mb-2 uppercase tracking-wide">Title</label>
+                      <input
+                        value={postData.title}
+                        onChange={(e) => handleTitleChange(e.target.value)}
+                        className="w-full px-5 py-4 rounded-xl bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 focus:border-primary-500 outline-none transition-all"
+                        placeholder="My Awesome Blog Post"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold mb-2 uppercase tracking-wide">Slug (Auto-generated)</label>
+                      <input
+                        value={postData.slug}
+                        onChange={(e) => setPostData({ ...postData, slug: e.target.value })}
+                        className="w-full px-5 py-4 rounded-xl bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 focus:border-primary-500 outline-none transition-all font-mono text-sm"
+                        required
+                      />
+                    </div>
+                  </div>
                   <div>
-                    <label className="block text-sm font-bold mb-2 uppercase tracking-wide">Title</label>
+                    <label className="block text-sm font-bold mb-2 uppercase tracking-wide">Image URL</label>
                     <input
-                      value={postData.title}
-                      onChange={(e) => setPostData({ ...postData, title: e.target.value })}
+                      value={postData.image}
+                      onChange={(e) => setPostData({ ...postData, image: e.target.value })}
                       className="w-full px-5 py-4 rounded-xl bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 focus:border-primary-500 outline-none transition-all"
-                      required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold mb-2 uppercase tracking-wide">Slug</label>
-                    <input
-                      value={postData.slug}
-                      onChange={(e) => setPostData({ ...postData, slug: e.target.value })}
-                      className="w-full px-5 py-4 rounded-xl bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 focus:border-primary-500 outline-none transition-all"
+                    <label className="block text-sm font-bold mb-2 uppercase tracking-wide">Content (Markdown Supported)</label>
+                    <textarea
+                      value={postData.content}
+                      onChange={(e) => setPostData({ ...postData, content: e.target.value })}
+                      rows={12}
+                      className="w-full px-5 py-4 rounded-xl bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 focus:border-primary-500 outline-none transition-all font-mono"
+                      placeholder="Use ## for headers, **bold**, and ``` for code blocks..."
                       required
                     />
                   </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold mb-2 uppercase tracking-wide">Image URL</label>
-                  <input
-                    value={postData.image}
-                    onChange={(e) => setPostData({ ...postData, image: e.target.value })}
-                    className="w-full px-5 py-4 rounded-xl bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 focus:border-primary-500 outline-none transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold mb-2 uppercase tracking-wide">Content</label>
-                  <textarea
-                    value={postData.content}
-                    onChange={(e) => setPostData({ ...postData, content: e.target.value })}
-                    rows={8}
-                    className="w-full px-5 py-4 rounded-xl bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 focus:border-primary-500 outline-none transition-all"
-                    required
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <input type="checkbox" checked={postData.published} onChange={(e) => setPostData({ ...postData, published: e.target.checked })} />
-                  <label>Published</label>
-                </div>
-              </>
+                  <div className="flex items-center gap-2">
+                    <input type="checkbox" checked={postData.published} onChange={(e) => setPostData({ ...postData, published: e.target.checked })} />
+                    <label className="font-bold">Publish Immediately</label>
+                  </div>
+                </>
+              )
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
