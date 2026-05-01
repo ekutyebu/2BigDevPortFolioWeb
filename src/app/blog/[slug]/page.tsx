@@ -85,17 +85,99 @@ export default async function BlogPostPage({ params }: PageProps) {
         </div>
 
         <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-outfit prose-p:text-muted prose-p:leading-relaxed">
-          {/* Render content - Supporting basic Markdown structure */}
-          <div className="whitespace-pre-wrap break-words">
-            {post.content.split('\n').map((line: string, i: number) => {
-              if (line.startsWith('## ')) return <h2 key={i} className="text-3xl font-bold mt-12 mb-6">{line.replace('## ', '')}</h2>;
-              if (line.startsWith('### ')) return <h3 key={i} className="text-2xl font-bold mt-8 mb-4">{line.replace('### ', '')}</h3>;
-              if (line.startsWith('---')) return <hr key={i} className="my-12 border-white/10" />;
-              if (line.startsWith('- ')) return <li key={i} className="ml-6 mb-2">{line.replace('- ', '')}</li>;
-              if (line.startsWith('|')) return <div key={i} className="font-mono text-sm bg-white/5 p-4 rounded-xl my-4 overflow-x-auto">{line}</div>;
-              if (line.startsWith('```')) return null; // Simple skip for block markers for now
-              return <p key={i} className="mb-4">{line}</p>;
-            })}
+          {/* Robust Custom Markdown Engine */}
+          <div className="space-y-6">
+            {(() => {
+              const blocks = post.content.split(/\n\s*\n/);
+              return blocks.map((block: string, i: number) => {
+                const trimmed = block.trim();
+                
+                // 1. Handle Code Blocks (```js ... ```)
+                if (trimmed.startsWith('```')) {
+                  const lines = trimmed.split('\n');
+                  const lang = lines[0].replace('```', '').trim() || 'code';
+                  const code = lines.slice(1, -1).join('\n');
+                  return (
+                    <div key={i} className="relative group my-8">
+                      <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={() => navigator.clipboard.writeText(code)}
+                          className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-xs font-bold px-3 py-1.5 rounded-lg border border-white/10 transition-all"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                      <div className="bg-[#0d1117] rounded-2xl overflow-hidden border border-white/5 shadow-2xl">
+                        <div className="px-4 py-2 bg-white/5 border-b border-white/5 text-[10px] uppercase tracking-widest font-bold text-muted flex justify-between items-center">
+                          <span>{lang}</span>
+                          <div className="flex gap-1.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
+                          </div>
+                        </div>
+                        <pre className="p-6 overflow-x-auto font-mono text-sm leading-relaxed text-[#c9d1d9]">
+                          <code>{code}</code>
+                        </pre>
+                      </div>
+                    </div>
+                  );
+                }
+
+                // 2. Handle Tables (| col |)
+                if (trimmed.startsWith('|')) {
+                  const rows = trimmed.split('\n').filter(r => r.trim() && !r.includes('---'));
+                  return (
+                    <div key={i} className="my-8 overflow-x-auto rounded-2xl border border-white/5 shadow-xl">
+                      <table className="w-full border-collapse text-sm">
+                        <thead>
+                          <tr className="bg-white/5 border-b border-white/5">
+                            {rows[0].split('|').filter(c => c.trim()).map((cell, idx) => (
+                              <th key={idx} className="p-4 text-left font-bold text-primary-500 uppercase tracking-wider">{cell.trim()}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rows.slice(1).map((row, rIdx) => (
+                            <tr key={rIdx} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                              {row.split('|').filter(c => c.trim()).map((cell, cIdx) => (
+                                <td key={cIdx} className="p-4 text-muted">{cell.trim()}</td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                }
+
+                // 3. Handle Headings
+                if (trimmed.startsWith('## ')) return <h2 key={i} className="heading-md mt-16 mb-8">{trimmed.replace('## ', '')}</h2>;
+                if (trimmed.startsWith('### ')) return <h3 key={i} className="text-2xl font-bold mt-12 mb-6 text-white">{trimmed.replace('### ', '')}</h3>;
+
+                // 4. Handle Lists
+                if (trimmed.startsWith('- ')) {
+                  return (
+                    <ul key={i} className="space-y-3 my-6">
+                      {trimmed.split('\n').map((li, liIdx) => (
+                        <li key={liIdx} className="flex gap-4 text-muted">
+                          <span className="text-primary-500 font-bold mt-1">→</span>
+                          {li.replace('- ', '')}
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                }
+
+                // 5. Handle Normal Paragraphs with Inline Formatting (Bold, Links)
+                const formatted = trimmed
+                  .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>') // Bold
+                  .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" class="text-primary-500 font-bold border-b border-primary-500/20 hover:border-primary-500 transition-all">$1</a>') // Links
+                  .replace(/`(.*?)`/g, '<code class="bg-white/10 px-1.5 py-0.5 rounded font-mono text-primary-400">$1</code>'); // Inline Code
+
+                return <p key={i} className="text-muted text-lg leading-relaxed mb-6" dangerouslySetInnerHTML={{ __html: formatted }} />;
+              });
+            })()}
           </div>
         </div>
 
