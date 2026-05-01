@@ -74,6 +74,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <script
+            async
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1832286453723558"
+            crossOrigin="anonymous"
+          ></script>
+          <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{
               __html: JSON.stringify({
