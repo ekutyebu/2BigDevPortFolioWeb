@@ -15,16 +15,20 @@ const isDev = process.env.NODE_ENV === "development";
 
 // Use standard driver locally AND during the build phase to avoid WebSocket errors
 // Use Neon adapter only at runtime in production
-export const prisma =
-  globalForPrisma.prisma ??
-  (isDev || isBuildPhase
-    ? new PrismaClient({
-        log: isDev ? ["query", "error", "warn"] : ["error"],
-      })
-    : new PrismaClient({
-        adapter: new PrismaNeon(new Pool({ connectionString: process.env.DATABASE_URL })),
-        log: ["error"],
-      }));
+const getPrismaClient = () => {
+  if (isDev || isBuildPhase) {
+    return new PrismaClient({
+      log: isDev ? ["query", "error", "warn"] : ["error"],
+    });
+  } else {
+    // Production runtime on Vercel
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const adapter = new PrismaNeon(pool);
+    return new PrismaClient({ adapter, log: ["error"] });
+  }
+};
+
+export const prisma = globalForPrisma.prisma ?? getPrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
