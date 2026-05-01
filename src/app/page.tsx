@@ -7,12 +7,14 @@ import { prisma } from "@/lib/prisma";
 
 export default async function Home() {
   let projects: any[] = [];
+  let errorMsg = null;
   try {
     projects = await prisma.project.findMany({
       orderBy: { order: "asc" },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Home page project fetch failed:", error);
+    errorMsg = error.message || "Unknown Database Error";
   }
 
   return (
@@ -79,7 +81,18 @@ export default async function Home() {
       </section>
 
       <Skills />
-      <Projects projects={projects} />
+      
+      {errorMsg ? (
+        <div className="section-container py-12">
+          <div className="glass p-8 rounded-3xl border-red-500/50 text-center">
+             <h3 className="text-red-500 font-bold mb-2">Live Debugger: Database Error</h3>
+             <p className="text-sm text-muted">{errorMsg}</p>
+          </div>
+        </div>
+      ) : (
+        <Projects projects={projects} />
+      )}
+
       {/* Testimonials Section */}
       <section className="py-24 overflow-hidden">
         <div className="section-container">
