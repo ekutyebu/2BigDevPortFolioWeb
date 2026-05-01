@@ -87,120 +87,89 @@ export default async function BlogPostPage({ params }: PageProps) {
            )}
         </div>
 
-        <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-outfit prose-p:text-muted prose-p:leading-relaxed">
-          {/* Masterclass Rendering Engine v7 */}
-          <div className="space-y-6">
+        <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-outfit prose-p:text-muted prose-p:leading-relaxed selection:bg-primary-500/30">
+          {/* Perfect Fidelity Engine v8 */}
+          <div className="space-y-10">
             {(() => {
               if (!post.content) return <p className="text-muted italic">This post has no content yet.</p>;
 
-              const lines = post.content.split('\n');
-              const rendered: any[] = [];
-              let buffer: string[] = [];
-              let mode: 'text' | 'code' | 'table' | 'list' = 'text';
+              const blocks = post.content.split(/\n\s*\n/);
+              return blocks.map((block: string, i: number) => {
+                const trimmed = block.trim();
+                if (!trimmed) return null;
 
-              const flush = (key: string) => {
-                if (buffer.length === 0) return;
-                const content = buffer.join('\n');
-
-                if (mode === 'code') {
-                  rendered.push(
-                    <div key={key} className="relative my-10 group">
+                // 1. Code Blocks
+                if (trimmed.startsWith('```')) {
+                  const lines = trimmed.split('\n');
+                  const code = lines.slice(1, lines[lines.length - 1].startsWith('```') ? -1 : undefined).join('\n');
+                  return (
+                    <div key={i} className="relative group my-12">
                       <div className="absolute top-4 right-4 z-20">
-                        <button 
-                          onClick={() => {
-                            navigator.clipboard.writeText(content);
-                            alert("Code copied to clipboard!");
-                          }} 
-                          className="bg-primary-500 hover:bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg shadow-lg transition-all active:scale-95"
-                        >
-                          Copy Code
-                        </button>
+                        <button onClick={() => { navigator.clipboard.writeText(code); alert("Copied!"); }} className="bg-primary-500 hover:bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg shadow-xl transition-all active:scale-95">Copy Code</button>
                       </div>
                       <div className="bg-[#0d1117] rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl">
-                        <div className="px-6 py-4 bg-white/5 border-b border-white/5 flex items-center gap-2">
-                           <div className="w-3 h-3 rounded-full bg-[#ff5f56]" /><div className="w-3 h-3 rounded-full bg-[#ffbd2e]" /><div className="w-3 h-3 rounded-full bg-[#27c93f]" />
-                           <span className="text-[10px] text-muted font-bold ml-2 uppercase tracking-widest opacity-50">Terminal</span>
-                        </div>
-                        <pre className="p-8 overflow-x-auto font-mono text-sm text-[#c9d1d9] leading-relaxed selection:bg-primary-500/30">
-                          <code>{content}</code>
-                        </pre>
+                        <div className="px-6 py-4 bg-white/5 border-b border-white/5 flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-[#ff5f56]" /><div className="w-3 h-3 rounded-full bg-[#ffbd2e]" /><div className="w-3 h-3 rounded-full bg-[#27c93f]" /></div>
+                        <pre className="p-8 overflow-x-auto font-mono text-sm text-[#c9d1d9] leading-relaxed"><code>{code}</code></pre>
                       </div>
                     </div>
                   );
-                } else if (mode === 'table') {
-                  const rows = buffer.filter(r => r.includes('|') && !r.trim().startsWith('|---'));
-                  if (rows.length > 0) {
-                    rendered.push(
-                      <div key={key} className="my-12 overflow-hidden rounded-[2rem] border border-white/5 bg-white/[0.02] shadow-2xl overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead><tr className="bg-primary-500/10 border-b border-white/5 text-primary-500">
-                            {rows[0].split('|').filter(c => c.trim()).map((cell, idx) => (<th key={idx} className="p-6 text-left font-black uppercase tracking-widest text-[10px]">{cell.trim()}</th>))}
-                          </tr></thead>
-                          <tbody>{rows.slice(1).map((row, rIdx) => (<tr key={rIdx} className="border-b border-white/5 last:border-0 hover:bg-white/[0.03] transition-colors">
-                            {row.split('|').filter(c => c.trim()).map((cell, cIdx) => (<td key={cIdx} className="p-6 text-muted/80 font-medium">{cell.trim()}</td>))}
-                          </tr>))}</tbody>
-                        </table>
-                      </div>
-                    );
-                  }
-                } else if (mode === 'list') {
-                  rendered.push(
-                    <ul key={key} className="space-y-5 my-10 pl-2">
-                      {buffer.map((li, idx) => (
+                }
+
+                // 2. Tables
+                if (trimmed.startsWith('|')) {
+                  const rows = trimmed.split('\n').filter(r => r.includes('|') && !r.includes('---'));
+                  return (
+                    <div key={i} className="my-12 overflow-hidden rounded-[2rem] border border-white/5 bg-white/[0.02] shadow-2xl overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead><tr className="bg-primary-500/10 border-b border-white/5 text-primary-500">
+                          {rows[0].split('|').filter(c => c.trim()).map((cell, idx) => (<th key={idx} className="p-6 text-left font-black uppercase tracking-widest text-[10px]">{cell.trim()}</th>))}
+                        </tr></thead>
+                        <tbody>{rows.slice(1).map((row, rIdx) => (<tr key={rIdx} className="border-b border-white/5 last:border-0 hover:bg-white/[0.03] transition-colors">
+                          {row.split('|').filter(c => c.trim()).map((cell, cIdx) => (<td key={cIdx} className="p-6 text-muted/80 font-medium">{cell.trim()}</td>))}
+                        </tr>))}</tbody>
+                      </table>
+                    </div>
+                  );
+                }
+
+                // 3. Headings
+                if (trimmed.startsWith('## ')) return <h2 key={i} className="text-3xl md:text-4xl font-bold mt-20 mb-10 text-white font-outfit border-l-4 border-primary-500 pl-6">{trimmed.replace('## ', '')}</h2>;
+                if (trimmed.startsWith('### ')) return <h3 key={i} className="text-xl md:text-2xl font-bold mt-12 mb-6 text-primary-500 font-outfit">{trimmed.replace('### ', '')}</h3>;
+                if (trimmed.startsWith('---')) return <hr key={i} className="my-16 border-white/5" />;
+
+                // 4. Lists
+                if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+                  return (
+                    <ul key={i} className="space-y-4 my-10 pl-2">
+                      {trimmed.split('\n').map((li, idx) => (
                         <li key={idx} className="flex gap-5 text-muted text-lg md:text-xl leading-relaxed">
-                          <div className="w-6 h-6 rounded-full bg-primary-500/10 flex items-center justify-center flex-shrink-0 mt-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary-500" />
-                          </div>
+                          <div className="w-6 h-6 rounded-full bg-primary-500/10 flex items-center justify-center flex-shrink-0 mt-1"><div className="w-1.5 h-1.5 rounded-full bg-primary-500" /></div>
                           <span>{li.replace(/^[-*]\s+/, '')}</span>
                         </li>
                       ))}
                     </ul>
                   );
-                } else {
-                  buffer.forEach((line, idx) => {
-                    const t = line.trim();
-                    if (!t) return rendered.push(<div key={`${key}-${idx}`} className="h-6" />);
-                    
-                    if (t.startsWith('## ')) rendered.push(<h2 key={`${key}-${idx}`} className="text-3xl md:text-4xl font-bold mt-20 mb-10 text-white font-outfit border-l-4 border-primary-500 pl-6 leading-tight">{t.replace('## ', '')}</h2>);
-                    else if (t.startsWith('### ')) rendered.push(<h3 key={`${key}-${idx}`} className="text-xl md:text-2xl font-bold mt-12 mb-6 text-primary-500 font-outfit">{t.replace('### ', '')}</h3>);
-                    else if (t.startsWith('---')) rendered.push(<hr key={`${key}-${idx}`} className="my-16 border-white/5" />);
-                    else {
-                      const parts = t.split(/(\*\*.*?\*\*|\[.*?\]\(.*?\)|`.*?`)/g);
-                      rendered.push(
-                        <p key={`${key}-${idx}`} className="text-muted/90 text-lg md:text-xl leading-[1.8] mb-8 font-medium">
-                          {parts.map((p, pIdx) => {
-                            if (p.startsWith('**') && p.endsWith('**')) return <strong key={pIdx} className="text-white font-black">{p.slice(2, -2)}</strong>;
-                            if (p.startsWith('[') && p.includes('](')) {
-                              const m = p.match(/\[(.*?)\]\((.*?)\)/);
-                              if (m) return <a key={pIdx} href={m[2]} target="_blank" className="text-primary-500 font-bold border-b-2 border-primary-500/20 hover:border-primary-500 hover:bg-primary-500/5 px-1 rounded transition-all">{m[1]}</a>;
-                            }
-                            if (p.startsWith('`') && p.endsWith('`')) return <code key={pIdx} className="bg-primary-500/10 border border-primary-500/20 px-2 py-0.5 rounded-lg text-primary-400 font-mono text-sm mx-1">{p.slice(1, -1)}</code>;
-                            return p;
-                          })}
-                        </p>
-                      );
-                    }
-                  });
                 }
-                buffer = [];
-              };
 
-              lines.forEach((line, i) => {
-                const t = line.trim();
-                if (t.startsWith('```')) {
-                  if (mode !== 'code') { flush(`pre-${i}`); mode = 'code'; }
-                  else { flush(`post-${i}`); mode = 'text'; }
-                } else if (mode === 'code') buffer.push(line);
-                else if (t.startsWith('|')) { if (mode !== 'table') { flush(`pre-${i}`); mode = 'table'; } buffer.push(line); }
-                else if (t.startsWith('- ') || t.startsWith('* ')) { if (mode !== 'list') { flush(`pre-${i}`); mode = 'list'; } buffer.push(line); }
-                else { if (mode !== 'text') { flush(`pre-${i}`); mode = 'text'; } buffer.push(line); }
+                // 5. Paragraphs with Inline Formatting
+                const parts = trimmed.split(/(\*\*.*?\*\*|\[.*?\]\(.*?\)|`.*?`)/g);
+                return (
+                  <p key={i} className="text-muted/90 text-lg md:text-xl leading-[1.8] mb-8 font-medium">
+                    {parts.map((p, pIdx) => {
+                      if (p.startsWith('**') && p.endsWith('**')) return <strong key={pIdx} className="text-white font-black">{p.slice(2, -2)}</strong>;
+                      if (p.startsWith('[') && p.includes('](')) {
+                        const m = p.match(/\[(.*?)\]\((.*?)\)/);
+                        if (m) return <a key={pIdx} href={m[2]} target="_blank" className="text-primary-500 font-bold border-b-2 border-primary-500/20 hover:border-primary-500 hover:bg-primary-500/5 px-1 rounded transition-all">{m[1]}</a>;
+                      }
+                      if (p.startsWith('`') && p.endsWith('`')) return <code key={pIdx} className="bg-primary-500/10 border border-primary-500/20 px-2 py-0.5 rounded-lg text-primary-400 font-mono text-sm mx-1">{p.slice(1, -1)}</code>;
+                      return p;
+                    })}
+                  </p>
+                );
               });
-              flush('final');
-              return rendered;
             })()}
           </div>
         </div>
->
 
         <div className="mt-16 pt-8 border-t border-gray-200 dark:border-white/5">
           <div className="flex items-center justify-between">
