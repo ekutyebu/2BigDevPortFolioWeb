@@ -9,12 +9,17 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-// Singleton pattern for PrismaClient
+// Detect if we are in the build phase
+const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+const isDev = process.env.NODE_ENV === "development";
+
+// Use standard driver locally AND during the build phase to avoid WebSocket errors
+// Use Neon adapter only at runtime in production
 export const prisma =
   globalForPrisma.prisma ??
-  (process.env.NODE_ENV === "development"
+  (isDev || isBuildPhase
     ? new PrismaClient({
-        log: ["query", "error", "warn"],
+        log: isDev ? ["query", "error", "warn"] : ["error"],
       })
     : new PrismaClient({
         adapter: new PrismaNeon(new Pool({ connectionString: process.env.DATABASE_URL })),
