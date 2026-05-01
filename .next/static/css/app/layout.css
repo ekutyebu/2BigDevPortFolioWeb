@@ -1626,3 +1626,31 @@ body {
   }
 }
 
+/*!************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[11].oneOf[2].use[1]!./node_modules/next/dist/build/webpack/loaders/next-font-loader/index.js??ruleSet[1].rules[11].oneOf[2].use[2]!./node_modules/next/font/google/target.css?{"path":"src\\app\\layout.tsx","import":"Inter","arguments":[{"subsets":["latin"],"variable":"--font-inter"}],"variableName":"inter"} ***!
+  \************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+@font-face {
+  font-family: '__Inter_Fallback_725fdb';
+  src: local("Arial");
+  ascent-override:90.20%;
+  descent-override:22.48%;
+  line-gap-override:0.00%;
+  size-adjust:107.40%;
+}@font-face {font-family: '__Inter_Fallback_Fallback_725fdb';src: local("Arial");ascent-override: 90.20%;descent-override: 22.48%;line-gap-override: 0.00%;size-adjust: 107.40%
+}.__className_725fdb {font-family: '__Inter_Fallback_725fdb', '__Inter_Fallback_Fallback_725fdb';font-style: normal
+}.__variable_725fdb {--font-inter: '__Inter_Fallback_725fdb', '__Inter_Fallback_Fallback_725fdb'
+}
+/*!***************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[11].oneOf[2].use[1]!./node_modules/next/dist/build/webpack/loaders/next-font-loader/index.js??ruleSet[1].rules[11].oneOf[2].use[2]!./node_modules/next/font/google/target.css?{"path":"src\\app\\layout.tsx","import":"Outfit","arguments":[{"subsets":["latin"],"variable":"--font-outfit"}],"variableName":"outfit"} ***!
+  \***************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+@font-face {
+  font-family: '__Outfit_Fallback_faffc9';
+  src: local("Arial");
+  ascent-override:100.55%;
+  descent-override:26.14%;
+  line-gap-override:0.00%;
+  size-adjust:99.45%;
+}@font-face {font-family: '__Outfit_Fallback_Fallback_faffc9';src: local("Arial");ascent-override: 100.55%;descent-override: 26.14%;line-gap-override: 0.00%;size-adjust: 99.45%
+}.__className_faffc9 {font-family: '__Outfit_Fallback_faffc9', '__Outfit_Fallback_Fallback_faffc9';font-style: normal
+}.__variable_faffc9 {--font-outfit: '__Outfit_Fallback_faffc9', '__Outfit_Fallback_Fallback_faffc9'
+}
