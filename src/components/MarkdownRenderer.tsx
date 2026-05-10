@@ -20,20 +20,14 @@ export default function MarkdownRenderer({ content }: { content: string }) {
           em: ({node, ...props}) => <em className="text-white italic" {...props} />,
           ul: ({node, ...props}) => <ul className="space-y-4 my-10 pl-2 list-none" {...props} />,
           ol: ({node, ...props}) => <ol className="space-y-4 my-10 pl-6 list-decimal list-outside text-muted text-lg md:text-xl" {...props} />,
-          li: ({node, className, children, ...props}) => {
-            // Check if it's inside an unordered list (ul) by looking at the parent or just applying a custom bullet if no number
-            const isOrdered = node?.parent?.tagName === 'ol';
-            return (
-              <li className={`text-muted text-lg md:text-xl leading-relaxed ${!isOrdered ? 'flex gap-5' : ''}`} {...props}>
-                {!isOrdered && (
-                  <div className="w-6 h-6 rounded-full bg-primary-500/10 flex items-center justify-center flex-shrink-0 mt-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary-500" />
-                  </div>
-                )}
-                <div>{children}</div>
-              </li>
-            );
-          },
+          li: ({node, className, children, ...props}) => (
+            <li className={`text-muted text-lg md:text-xl leading-relaxed relative
+               [ul_&]:pl-8 [ul_&]:before:content-[''] [ul_&]:before:absolute [ul_&]:before:left-0 [ul_&]:before:top-2.5 [ul_&]:before:w-2 [ul_&]:before:h-2 [ul_&]:before:bg-primary-500 [ul_&]:before:rounded-full [ul_&]:before:ring-4 [ul_&]:before:ring-primary-500/10
+               [ol_&]:list-item
+            `} {...props}>
+              {children}
+            </li>
+          ),
           blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-accent-500 pl-6 italic my-8 text-xl text-muted bg-white/5 py-4 rounded-r-2xl" {...props} />,
           hr: ({node, ...props}) => <hr className="my-16 border-white/5" {...props} />,
           img: ({node, ...props}) => (
