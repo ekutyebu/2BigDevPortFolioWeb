@@ -75,11 +75,17 @@ async function main() {
     let coverImage = metadata.coverimage || metadata.image || metadata.cover_image || '';
     
     // Check if image is a local path and if it actually exists
-    if (coverImage && coverImage.startsWith('/')) {
-      const publicImagePath = path.join(process.cwd(), 'public', coverImage);
+    if (coverImage && !coverImage.startsWith('http')) {
+      // Ensure it has a leading slash for joining correctly if it doesn't
+      const normalizedCoverImage = coverImage.startsWith('/') ? coverImage : `/${coverImage}`;
+      const publicImagePath = path.join(process.cwd(), 'public', normalizedCoverImage);
+      
       if (!fs.existsSync(publicImagePath)) {
         console.warn(`⚠️ Local image not found: ${coverImage}. Using high-quality fallback.`);
         coverImage = getFallbackImage(slug);
+      } else {
+        // Fix the path in DB to always have leading slash
+        coverImage = normalizedCoverImage;
       }
     } else if (!coverImage) {
       coverImage = getFallbackImage(slug);

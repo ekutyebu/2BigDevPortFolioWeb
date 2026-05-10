@@ -1,186 +1,88 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import CopyButton from './CopyButton';
 
 export default function MarkdownRenderer({ content }: { content: string }) {
   if (!content) return <p className="text-muted italic">This post has no content yet.</p>;
 
-  const lines = content.split('\n');
-  const rendered: React.ReactNode[] = [];
-  
-  let mode: 'text' | 'code' | 'table' | 'list' = 'text';
-  let buffer: string[] = [];
-  let blockKey = 0;
-
-  const formatInline = (text: string) => {
-    // Basic inline formatting: **bold**, `code`, [link](url), ![alt](url)
-    const parts = text.split(/(\*\*.*?\*\*|!\[.*?\]\(.*?\)|\[.*?\]\(.*?\)|`.*?`)/g);
-    return parts.map((part, i) => {
-      if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={i} className="text-white font-black">{part.slice(2, -2)}</strong>;
-      }
-      if (part.startsWith('![') && part.includes('](')) {
-        const match = part.match(/!\[(.*?)\]\((.*?)\)/);
-        if (match) {
-          return (
-            <span key={i} className="block my-8 rounded-2xl overflow-hidden shadow-2xl border border-white/5">
-              <img src={match[2]} alt={match[1]} className="w-full h-auto object-cover" />
-            </span>
-          );
-        }
-      }
-      if (part.startsWith('[') && part.includes('](')) {
-        const match = part.match(/\[(.*?)\]\((.*?)\)/);
-        if (match) {
-          return <a key={i} href={match[2]} target="_blank" rel="noopener noreferrer" className="text-primary-500 font-bold border-b-2 border-primary-500/20 hover:border-primary-500 hover:bg-primary-500/5 px-1 rounded transition-all">{match[1]}</a>;
-        }
-      }
-      if (part.startsWith('`') && part.endsWith('`')) {
-        return <code key={i} className="bg-primary-500/10 border border-primary-500/20 px-2 py-0.5 rounded-lg text-primary-400 font-mono text-sm mx-1">{part.slice(1, -1)}</code>;
-      }
-      return <span key={i}>{part}</span>;
-    });
-  };
-
-  const flush = () => {
-    if (buffer.length === 0) return;
-    const currentKey = blockKey++;
-    
-    if (mode === 'code') {
-      const code = buffer.join('\n');
-      rendered.push(
-        <div key={`code-${currentKey}`} className="relative group my-12">
-          <div className="absolute top-4 right-4 z-20">
-            <CopyButton code={code} />
-          </div>
-          <div className="bg-[#0d1117] rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl">
-            <div className="px-6 py-4 bg-white/5 border-b border-white/5 flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
-              <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
-              <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
-            </div>
-            <pre className="p-8 overflow-x-auto font-mono text-sm text-[#c9d1d9] leading-relaxed">
-              <code>{code}</code>
-            </pre>
-          </div>
-        </div>
-      );
-    } else if (mode === 'table') {
-      // Filter out separator lines which consist entirely of |, -, :, and spaces.
-      const rows = buffer.filter(r => r.includes('|') && !/^[\s|:-]+$/.test(r));
-      if (rows.length > 0) {
-        rendered.push(
-          <div key={`table-${currentKey}`} className="my-12 overflow-hidden rounded-[2rem] border border-white/5 bg-white/[0.02] shadow-2xl overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-primary-500/10 border-b border-white/5 text-primary-500">
-                  {rows[0].split('|').filter(c => c.trim()).map((cell, idx) => (
-                    <th key={idx} className="p-6 text-left font-black uppercase tracking-widest text-[10px]">{formatInline(cell.trim())}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.slice(1).map((row, rIdx) => (
-                  <tr key={rIdx} className="border-b border-white/5 last:border-0 hover:bg-white/[0.03] transition-colors">
-                    {row.split('|').filter(c => c.trim()).map((cell, cIdx) => (
-                      <td key={cIdx} className="p-6 text-muted/80 font-medium">{formatInline(cell.trim())}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        );
-      }
-    } else if (mode === 'list') {
-      const isOrdered = /^\d+\.\s+/.test(buffer[0]?.trim());
-      const ListTag = isOrdered ? 'ol' : 'ul';
-      rendered.push(
-        <ListTag key={`list-${currentKey}`} className={`space-y-4 my-10 pl-2 ${isOrdered ? 'list-decimal list-inside' : ''}`}>
-          {buffer.map((li, idx) => {
-            const text = li.replace(/^[-*]\s+/, '').replace(/^\d+\.\s+/, '').trim();
-            if (!text) return null;
+  return (
+    <div className="space-y-6">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          h1: ({node, ...props}) => <h1 className="text-4xl md:text-5xl font-bold mt-20 mb-10 text-white font-outfit border-l-4 border-primary-500 pl-6" {...props} />,
+          h2: ({node, ...props}) => <h2 className="text-3xl md:text-4xl font-bold mt-20 mb-10 text-white font-outfit border-l-4 border-primary-500 pl-6" {...props} />,
+          h3: ({node, ...props}) => <h3 className="text-xl md:text-2xl font-bold mt-12 mb-6 text-primary-500 font-outfit" {...props} />,
+          p: ({node, ...props}) => <p className="text-muted/90 text-lg md:text-xl leading-[1.8] mb-8 font-medium" {...props} />,
+          a: ({node, ...props}) => <a className="text-primary-500 font-bold border-b-2 border-primary-500/20 hover:border-primary-500 hover:bg-primary-500/5 px-1 rounded transition-all" target="_blank" rel="noopener noreferrer" {...props} />,
+          strong: ({node, ...props}) => <strong className="text-white font-black" {...props} />,
+          em: ({node, ...props}) => <em className="text-white italic" {...props} />,
+          ul: ({node, ...props}) => <ul className="space-y-4 my-10 pl-2 list-none" {...props} />,
+          ol: ({node, ...props}) => <ol className="space-y-4 my-10 pl-6 list-decimal list-outside text-muted text-lg md:text-xl" {...props} />,
+          li: ({node, className, children, ...props}) => {
+            // Check if it's inside an unordered list (ul) by looking at the parent or just applying a custom bullet if no number
+            const isOrdered = node?.parent?.tagName === 'ol';
             return (
-              <li key={idx} className={`text-muted text-lg md:text-xl leading-relaxed ${!isOrdered ? 'flex gap-5' : 'pl-2'}`}>
+              <li className={`text-muted text-lg md:text-xl leading-relaxed ${!isOrdered ? 'flex gap-5' : ''}`} {...props}>
                 {!isOrdered && (
                   <div className="w-6 h-6 rounded-full bg-primary-500/10 flex items-center justify-center flex-shrink-0 mt-1">
                     <div className="w-1.5 h-1.5 rounded-full bg-primary-500" />
                   </div>
                 )}
-                <div>{formatInline(text)}</div>
+                <div>{children}</div>
               </li>
             );
-          })}
-        </ListTag>
-      );
-    } else {
-      // Text mode can contain multiple paragraphs, headers, or blockquotes
-      buffer.forEach((line, idx) => {
-        const t = line.trim();
-        if (!t) return;
-        
-        if (t.startsWith('## ')) {
-          rendered.push(<h2 key={`h2-${currentKey}-${idx}`} className="text-3xl md:text-4xl font-bold mt-20 mb-10 text-white font-outfit border-l-4 border-primary-500 pl-6">{formatInline(t.replace('## ', ''))}</h2>);
-        } else if (t.startsWith('### ')) {
-          rendered.push(<h3 key={`h3-${currentKey}-${idx}`} className="text-xl md:text-2xl font-bold mt-12 mb-6 text-primary-500 font-outfit">{formatInline(t.replace('### ', ''))}</h3>);
-        } else if (t.startsWith('---')) {
-          rendered.push(<hr key={`hr-${currentKey}-${idx}`} className="my-16 border-white/5" />);
-        } else if (t.startsWith('> ')) {
-          rendered.push(
-            <blockquote key={`bq-${currentKey}-${idx}`} className="border-l-4 border-accent-500 pl-6 italic my-8 text-xl text-muted">
-               {formatInline(t.replace('> ', ''))}
-            </blockquote>
-          );
-        } else {
-          rendered.push(
-            <p key={`p-${currentKey}-${idx}`} className="text-muted/90 text-lg md:text-xl leading-[1.8] mb-8 font-medium">
-              {formatInline(t)}
-            </p>
-          );
-        }
-      });
-    }
-    buffer = [];
-  };
-
-  lines.forEach((line) => {
-    const trimmed = line.trim();
-    if (trimmed.startsWith('```')) {
-      if (mode !== 'code') {
-        flush();
-        mode = 'code';
-      } else {
-        flush();
-        mode = 'text';
-      }
-    } else if (mode === 'code') {
-      buffer.push(line);
-    } else if (trimmed.startsWith('|')) {
-      if (mode !== 'table') {
-        flush();
-        mode = 'table';
-      }
-      buffer.push(line);
-    } else if (/^[-*]\s+/.test(trimmed) || /^\d+\.\s+/.test(trimmed)) {
-      if (mode !== 'list') {
-        flush();
-        mode = 'list';
-      }
-      buffer.push(line);
-    } else if (!trimmed) {
-      if (mode === 'list' || mode === 'table') {
-        flush();
-        mode = 'text';
-      }
-    } else {
-      if (mode !== 'text') {
-        flush();
-        mode = 'text';
-      }
-      buffer.push(line);
-    }
-  });
-
-  flush();
-
-  return <div className="space-y-2">{rendered}</div>;
+          },
+          blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-accent-500 pl-6 italic my-8 text-xl text-muted bg-white/5 py-4 rounded-r-2xl" {...props} />,
+          hr: ({node, ...props}) => <hr className="my-16 border-white/5" {...props} />,
+          img: ({node, ...props}) => (
+            <span className="block my-12 rounded-3xl overflow-hidden shadow-2xl border border-white/5">
+              <img className="w-full h-auto object-cover" {...props} />
+            </span>
+          ),
+          code: ({node, inline, className, children, ...props}: any) => {
+            const match = /language-(\w+)/.exec(className || '');
+            const isInline = inline || !match;
+            if (isInline) {
+              return <code className="bg-primary-500/10 border border-primary-500/20 px-2 py-0.5 rounded-lg text-primary-400 font-mono text-sm mx-1" {...props}>{children}</code>;
+            }
+            
+            const codeString = String(children).replace(/\n$/, '');
+            return (
+              <div className="relative group my-12">
+                <div className="absolute top-4 right-4 z-20">
+                  <CopyButton code={codeString} />
+                </div>
+                <div className="bg-[#0d1117] rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl">
+                  <div className="px-6 py-4 bg-white/5 border-b border-white/5 flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
+                    <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
+                    <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
+                  </div>
+                  <pre className="p-8 overflow-x-auto font-mono text-sm text-[#c9d1d9] leading-relaxed">
+                    <code className={className} {...props}>
+                      {children}
+                    </code>
+                  </pre>
+                </div>
+              </div>
+            );
+          },
+          table: ({node, ...props}) => (
+            <div className="my-12 overflow-hidden rounded-[2rem] border border-white/5 bg-white/[0.02] shadow-2xl overflow-x-auto">
+              <table className="w-full text-sm" {...props} />
+            </div>
+          ),
+          thead: ({node, ...props}) => <thead className="bg-primary-500/10 border-b border-white/5 text-primary-500" {...props} />,
+          th: ({node, ...props}) => <th className="p-6 text-left font-black uppercase tracking-widest text-[10px]" {...props} />,
+          tbody: ({node, ...props}) => <tbody {...props} />,
+          tr: ({node, ...props}) => <tr className="border-b border-white/5 last:border-0 hover:bg-white/[0.03] transition-colors" {...props} />,
+          td: ({node, ...props}) => <td className="p-6 text-muted/80 font-medium" {...props} />,
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
+  );
 }
