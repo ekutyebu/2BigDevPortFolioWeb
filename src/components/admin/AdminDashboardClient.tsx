@@ -4,10 +4,11 @@ import { useState } from "react";
 import { Plus, Edit, Trash2, Save, X, Image as ImageIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export default function AdminDashboardClient({ initialPosts, initialProjects }: { initialPosts: any[], initialProjects: any[] }) {
-  const [activeTab, setActiveTab] = useState<"posts" | "projects">("posts");
+export default function AdminDashboardClient({ initialPosts, initialProjects, initialMessages }: { initialPosts: any[], initialProjects: any[], initialMessages: any[] }) {
+  const [activeTab, setActiveTab] = useState<"posts" | "projects" | "messages">("posts");
   const [posts, setPosts] = useState(initialPosts);
   const [projects, setProjects] = useState(initialProjects);
+  const [messages, setMessages] = useState(initialMessages);
   const [isAdding, setIsAdding] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -70,13 +71,15 @@ export default function AdminDashboardClient({ initialPosts, initialProjects }: 
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm(`Are you sure you want to delete this ${activeTab === 'posts' ? 'article' : 'project'}?`)) return;
+    let typeName = activeTab === 'posts' ? 'article' : (activeTab === 'projects' ? 'project' : 'message');
+    if (!confirm(`Are you sure you want to delete this ${typeName}?`)) return;
 
     try {
       const res = await fetch(`/api/admin/${activeTab}/${id}`, { method: "DELETE" });
       if (res.ok) {
         if (activeTab === "posts") setPosts(posts.filter(p => p.id !== id));
-        else setProjects(projects.filter(p => p.id !== id));
+        else if (activeTab === "projects") setProjects(projects.filter(p => p.id !== id));
+        else setMessages(messages.filter(m => m.id !== id));
         router.refresh();
       }
     } catch (err) {
@@ -150,11 +153,21 @@ export default function AdminDashboardClient({ initialPosts, initialProjects }: 
         >
           Portfolio Projects
         </button>
+        <button
+          onClick={() => { setActiveTab("messages"); resetForm(); }}
+          className={`px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 ${activeTab === "messages" ? "bg-primary-500 text-white shadow-lg shadow-primary-500/25" : "text-muted hover:text-primary-500"}`}
+        >
+          Inbox
+          {messages.length > 0 && (
+            <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full">{messages.length}</span>
+          )}
+        </button>
       </div>
 
       {/* Form Area */}
-      {isAdding ? (
-        <div className="glass p-8 rounded-3xl border border-primary-500/30">
+      {activeTab !== "messages" && (
+        isAdding ? (
+          <div className="glass p-8 rounded-3xl border border-primary-500/30">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-bold font-outfit">
               {editingItem ? `Edit ${activeTab === 'posts' ? 'Post' : 'Project'}` : `New ${activeTab === 'posts' ? 'Post' : 'Project'}`}
@@ -313,35 +326,66 @@ export default function AdminDashboardClient({ initialPosts, initialProjects }: 
           <Plus size={40} />
           <span className="font-bold text-lg">Add {activeTab === "posts" ? "Blog Article" : "Portfolio Project"}</span>
         </button>
-      )}
+      ))}
 
       {/* List Area */}
-      <div className="grid grid-cols-1 gap-6">
-        <h2 className="text-2xl font-bold font-outfit">
-          Existing {activeTab === "posts" ? "Articles" : "Projects"} ({activeTab === "posts" ? posts.length : projects.length})
-        </h2>
-        {(activeTab === "posts" ? posts : projects).map((item: any) => (
-          <div key={item.id} className="glass p-6 rounded-3xl flex items-center justify-between group">
-            <div className="flex items-center gap-6">
-              <div className="w-20 h-20 rounded-2xl bg-primary-500/10 overflow-hidden">
-                <img src={item.image} className="w-full h-full object-cover" alt="" />
+      {activeTab === "messages" ? (
+        <div className="grid grid-cols-1 gap-6">
+          <h2 className="text-2xl font-bold font-outfit">Inbox ({messages.length})</h2>
+          {messages.length === 0 ? (
+            <div className="glass p-8 text-center text-muted rounded-3xl">No messages yet.</div>
+          ) : (
+            messages.map((msg: any) => (
+              <div key={msg.id} className="glass p-8 rounded-3xl flex flex-col gap-4 group">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-bold text-xl text-primary-500">{msg.subject}</h3>
+                    <p className="text-sm text-white font-bold mt-1">{msg.name} <span className="text-muted font-normal">&lt;{msg.email}&gt;</span></p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs text-muted font-mono bg-white/5 px-3 py-1 rounded-full">
+                      {new Date(msg.createdAt).toLocaleString()}
+                    </span>
+                    <button onClick={() => handleDelete(msg.id)} className="p-2 rounded-xl text-muted hover:text-red-500 hover:bg-red-500/10 transition-all">
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+                <div className="bg-black/20 p-6 rounded-2xl border border-white/5 mt-2">
+                  <p className="text-muted leading-relaxed whitespace-pre-wrap">{msg.message}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-xl">{item.title}</h3>
-                <p className="text-sm text-muted line-clamp-1">{activeTab === "posts" ? item.slug : item.description}</p>
+            ))
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6">
+          <h2 className="text-2xl font-bold font-outfit">
+            Existing {activeTab === "posts" ? "Articles" : "Projects"} ({activeTab === "posts" ? posts.length : projects.length})
+          </h2>
+          {(activeTab === "posts" ? posts : projects).map((item: any) => (
+            <div key={item.id} className="glass p-6 rounded-3xl flex items-center justify-between group">
+              <div className="flex items-center gap-6">
+                <div className="w-20 h-20 rounded-2xl bg-primary-500/10 overflow-hidden">
+                  <img src={item.image} className="w-full h-full object-cover" alt="" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-xl">{item.title}</h3>
+                  <p className="text-sm text-muted line-clamp-1">{activeTab === "posts" ? item.slug : item.description}</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <button onClick={() => startEdit(item)} className="p-3 rounded-xl hover:text-primary-500 transition-all">
+                  <Edit size={18} />
+                </button>
+                <button onClick={() => handleDelete(item.id)} className="p-3 rounded-xl hover:text-red-500 transition-all">
+                  <Trash2 size={18} />
+                </button>
               </div>
             </div>
-            <div className="flex gap-4">
-              <button onClick={() => startEdit(item)} className="p-3 rounded-xl hover:text-primary-500 transition-all">
-                <Edit size={18} />
-              </button>
-              <button onClick={() => handleDelete(item.id)} className="p-3 rounded-xl hover:text-red-500 transition-all">
-                <Trash2 size={18} />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
