@@ -23,7 +23,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     if (!post) return { title: "Post Not Found" };
 
-    const description = post.content ? post.content.substring(0, 160).replace(/[#*`]/g, '') : "Technical Insight";
+    const description = post.content ? post.content
+      .replace(/^#+\s+/gm, '')
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .replace(/__/g, '')
+      .replace(/`/g, '')
+      .replace(/^>\s+/gm, '')
+      .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+      .replace(/!\[(.*?)\]\(.*?\)/g, '')
+      .replace(/<[^>]*>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .substring(0, 160) : "Technical Insight";
     const date = post.createdAt ? new Date(post.createdAt) : new Date();
     const isoDate = !isNaN(date.getTime()) ? date.toISOString() : new Date().toISOString();
 
