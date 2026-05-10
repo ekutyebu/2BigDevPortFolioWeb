@@ -14,7 +14,9 @@ export default function MarkdownRenderer({ content }: { content: string }) {
           h1: ({node, ...props}) => <h1 className="text-4xl md:text-5xl font-bold mt-20 mb-10 text-white font-outfit border-l-4 border-primary-500 pl-6" {...props} />,
           h2: ({node, ...props}) => <h2 className="text-3xl md:text-4xl font-bold mt-20 mb-10 text-white font-outfit border-l-4 border-primary-500 pl-6" {...props} />,
           h3: ({node, ...props}) => <h3 className="text-xl md:text-2xl font-bold mt-12 mb-6 text-primary-500 font-outfit" {...props} />,
-          p: ({node, ...props}) => <p className="text-muted/90 text-lg md:text-xl leading-[1.8] mb-8 font-medium" {...props} />,
+          p: ({node, ...props}) => (
+            <p className="text-muted/90 text-lg md:text-xl leading-[1.8] font-medium [li_&]:mb-0 [blockquote_&]:mb-0 mb-8" {...props} />
+          ),
           a: ({node, ...props}) => <a className="text-primary-500 font-bold border-b-2 border-primary-500/20 hover:border-primary-500 hover:bg-primary-500/5 px-1 rounded transition-all" target="_blank" rel="noopener noreferrer" {...props} />,
           strong: ({node, ...props}) => <strong className="text-white font-black" {...props} />,
           em: ({node, ...props}) => <em className="text-white italic" {...props} />,
@@ -35,6 +37,7 @@ export default function MarkdownRenderer({ content }: { content: string }) {
               <img className="w-full h-auto object-cover" {...props} />
             </span>
           ),
+          pre: ({node, ...props}) => <React.Fragment>{props.children}</React.Fragment>,
           code: ({node, inline, className, children, ...props}: any) => {
             const match = /language-(\w+)/.exec(className || '');
             const isInline = inline || !match;
