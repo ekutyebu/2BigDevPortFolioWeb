@@ -59,7 +59,19 @@ export default async function BlogPage() {
                   {post.title}
                 </h2>
                 <p className="text-muted line-clamp-3 mb-6">
-                  {post.content.replace(/<[^>]*>/g, '').substring(0, 160)}...
+                  {post.content
+                    .replace(/^#+\s+/gm, '')
+                    .replace(/\*\*/g, '')
+                    .replace(/\*/g, '')
+                    .replace(/__/g, '')
+                    .replace(/`/g, '')
+                    .replace(/^>\s+/gm, '')
+                    .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+                    .replace(/!\[(.*?)\]\(.*?\)/g, '')
+                    .replace(/<[^>]*>/g, '')
+                    .replace(/\s+/g, ' ')
+                    .trim()
+                    .substring(0, 160)}...
                 </p>
                 <div className="flex items-center gap-2 font-bold text-primary-500">
                   Read More <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
