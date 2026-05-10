@@ -34,21 +34,40 @@ export async function POST(req: Request) {
     });
 
     // 3. Send Email Alert to Admin
+    let emailStatus = "sent";
+    let emailErrorDetail = null;
+    
     try {
       if (process.env.RESEND_API_KEY) {
-        await resend.emails.send({
+        const { data, error } = await resend.emails.send({
           from: "Portfolio Contact <onboarding@resend.dev>", 
-          to: process.env.CONTACT_EMAIL || "ebubarna1@gmail.com", // Fallback to user's known email
+          to: process.env.CONTACT_EMAIL || "ebubarna1@gmail.com",
           subject: `New Contact: ${subject}`,
           react: ContactEmail({ name, email, subject, message }),
         });
+
+        if (error) {
+          console.error("Resend API Error details:", error);
+          emailStatus = "failed";
+          emailErrorDetail = error;
+        } else {
+          console.log("Resend API Success:", data);
+        }
+      } else {
+        emailStatus = "skipped_no_api_key";
       }
     } catch (emailError) {
       console.error("Failed to send email alert, but message saved:", emailError);
-      // We don't throw here so the user still sees a "success" message
+      emailStatus = "crashed";
+      emailErrorDetail = emailError;
     }
 
-    return NextResponse.json({ success: true, id: savedMessage.id });
+    return NextResponse.json({ 
+      success: true, 
+      id: savedMessage.id,
+      emailStatus,
+      emailErrorDetail
+    });
   } catch (error) {
     console.error("Contact Form Error:", error);
     return NextResponse.json(
