@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import CopyButton from './CopyButton';
 
 export default function MarkdownRenderer({ content }: { content: string }) {
@@ -10,6 +11,7 @@ export default function MarkdownRenderer({ content }: { content: string }) {
     <div className="space-y-6">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw]}
         components={{
           h1: ({node, ...props}) => <h1 className="text-4xl md:text-5xl font-bold mt-20 mb-10 text-white font-outfit border-l-4 border-primary-500 pl-6" {...props} />,
           h2: ({node, ...props}) => <h2 className="text-3xl md:text-4xl font-bold mt-20 mb-10 text-white font-outfit border-l-4 border-primary-500 pl-6" {...props} />,
@@ -37,19 +39,13 @@ export default function MarkdownRenderer({ content }: { content: string }) {
               <img className="w-full h-auto object-cover" {...props} />
             </span>
           ),
-          pre: ({node, ...props}) => <React.Fragment>{props.children}</React.Fragment>,
-          code: ({node, inline, className, children, ...props}: any) => {
-            const match = /language-(\w+)/.exec(className || '');
-            const isBlock = match || String(children).includes('\n');
-            if (!isBlock) {
-              return <code className="bg-primary-500/10 border border-primary-500/20 px-2 py-0.5 rounded-lg text-primary-400 font-mono text-sm mx-1" {...props}>{children}</code>;
-            }
-            
-            const codeString = String(children).replace(/\n$/, '');
+          pre: ({node, children, ...props}: any) => {
+            // Extract the raw text from the code element inside the pre for the copy button
+            const rawCode = node?.children?.[0]?.children?.[0]?.value || '';
             return (
               <div className="relative group my-12">
                 <div className="absolute top-4 right-4 z-20">
-                  <CopyButton code={codeString} />
+                  <CopyButton code={rawCode} />
                 </div>
                 <div className="bg-[#0d1117] rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl">
                   <div className="px-6 py-4 bg-white/5 border-b border-white/5 flex items-center gap-2">
@@ -57,15 +53,25 @@ export default function MarkdownRenderer({ content }: { content: string }) {
                     <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
                     <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
                   </div>
-                  <pre className="p-8 overflow-x-auto font-mono text-sm text-[#c9d1d9] leading-relaxed">
-                    <code className={className} {...props}>
-                      {children}
-                    </code>
+                  <pre className="p-8 overflow-x-auto font-mono text-sm text-[#c9d1d9] leading-relaxed" {...props}>
+                    {children}
                   </pre>
                 </div>
               </div>
             );
           },
+          code: ({node, className, children, ...props}: any) => (
+            <code 
+              className={`
+                ${className || ''} 
+                bg-primary-500/10 border border-primary-500/20 px-2 py-0.5 rounded-lg text-primary-400 font-mono text-sm mx-1
+                [pre_&]:bg-transparent [pre_&]:border-0 [pre_&]:p-0 [pre_&]:text-inherit [pre_&]:mx-0 [pre_&]:rounded-none
+              `} 
+              {...props}
+            >
+              {children}
+            </code>
+          ),
           table: ({node, ...props}) => (
             <div className="my-12 overflow-hidden rounded-[2rem] border border-white/5 bg-white/[0.02] shadow-2xl overflow-x-auto">
               <table className="w-full text-sm" {...props} />

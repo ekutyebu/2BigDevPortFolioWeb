@@ -10,7 +10,6 @@ async function getPosts() {
     where: { published: true },
     orderBy: { createdAt: "desc" },
   });
-  console.log("DEBUG: Available slugs in DB:", posts.map(p => p.slug));
   return posts;
 }
 
