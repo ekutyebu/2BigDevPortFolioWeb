@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { getPrisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Calendar, ArrowRight } from "lucide-react";
+import ReactMarkdown from 'react-markdown';
 
 async function getPosts() {
   const prisma = getPrisma();
@@ -58,21 +59,24 @@ export default async function BlogPage() {
                 <h2 className="text-2xl font-bold font-outfit group-hover:text-primary-500 transition-colors mb-4">
                   {post.title}
                 </h2>
-                <p className="text-muted line-clamp-3 mb-6">
-                  {post.content
-                    .replace(/^#+\s+/gm, '')
-                    .replace(/\*\*/g, '')
-                    .replace(/\*/g, '')
-                    .replace(/__/g, '')
-                    .replace(/`/g, '')
-                    .replace(/^>\s+/gm, '')
-                    .replace(/\[(.*?)\]\(.*?\)/g, '$1')
-                    .replace(/!\[(.*?)\]\(.*?\)/g, '')
-                    .replace(/<[^>]*>/g, '')
-                    .replace(/\s+/g, ' ')
-                    .trim()
-                    .substring(0, 160)}...
-                </p>
+                <div className="text-muted line-clamp-3 mb-6">
+                  <ReactMarkdown
+                    components={{
+                      h1: ({node, ...props}) => <strong className="block text-white mb-2" {...props} />,
+                      h2: ({node, ...props}) => <strong className="block text-white mb-2" {...props} />,
+                      h3: ({node, ...props}) => <strong className="block text-white mb-2" {...props} />,
+                      p: ({node, ...props}) => <span className="inline" {...props} />,
+                      a: ({node, ...props}) => <span className="text-primary-500 font-bold" {...props} />,
+                      ul: ({node, ...props}) => <span className="inline" {...props} />,
+                      li: ({node, ...props}) => <span className="inline mr-2 after:content-[','] last:after:content-none" {...props} />,
+                      blockquote: ({node, ...props}) => <span className="italic" {...props} />,
+                      pre: () => <span className="hidden"></span>, // Hide huge code blocks in preview
+                      img: () => <span className="hidden"></span>, // Hide inline images in preview
+                    }}
+                  >
+                    {post.content.split('---')[0] || post.content.substring(0, 300)}
+                  </ReactMarkdown>
+                </div>
                 <div className="flex items-center gap-2 font-bold text-primary-500">
                   Read More <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                 </div>

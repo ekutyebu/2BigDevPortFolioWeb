@@ -40,8 +40,8 @@ export default function MarkdownRenderer({ content }: { content: string }) {
           pre: ({node, ...props}) => <React.Fragment>{props.children}</React.Fragment>,
           code: ({node, inline, className, children, ...props}: any) => {
             const match = /language-(\w+)/.exec(className || '');
-            const isInline = inline || !match;
-            if (isInline) {
+            const isBlock = match || String(children).includes('\n');
+            if (!isBlock) {
               return <code className="bg-primary-500/10 border border-primary-500/20 px-2 py-0.5 rounded-lg text-primary-400 font-mono text-sm mx-1" {...props}>{children}</code>;
             }
             
