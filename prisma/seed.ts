@@ -43,9 +43,48 @@ async function main() {
       }
     });
 
+    // Curated high-quality tech images for fallbacks
+    const curatedTechImages = [
+      "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1200", // Cyber/Tech
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1200", // Earth/Network
+      "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=1200", // Hardware
+      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=1200", // Matrix code
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200", // Analytics/Business
+      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=1200", // Code on screen
+      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=1200", // Abstract tech
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=1200", // Workspace
+      "https://images.unsplash.com/photo-1531297172868-9f140bg3d4a4?auto=format&fit=crop&q=80&w=1200", // Not found (placeholder) wait, I'll use a valid one
+      "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80&w=1200", // Team/Tech
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1200", // Data/Graphs
+      "https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&q=80&w=1200", // Programming
+      "https://images.unsplash.com/photo-1537432376769-00f5c2f4c8d2?auto=format&fit=crop&q=80&w=1200", // Clean code
+      "https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?auto=format&fit=crop&q=80&w=1200", // Server/Cloud
+      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&q=80&w=1200", // Blockchain/Crypto
+    ];
+
+    const getFallbackImage = (slugStr: string) => {
+      let hash = 0;
+      for (let i = 0; i < slugStr.length; i++) {
+        hash = slugStr.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return curatedTechImages[Math.abs(hash) % curatedTechImages.length];
+    };
+
     // 2. Map fields with fallbacks
     const title = metadata.title || slug.split('-').join(' ');
-    const coverImage = metadata.coverimage || metadata.image || metadata.cover_image || '';
+    let coverImage = metadata.coverimage || metadata.image || metadata.cover_image || '';
+    
+    // Check if image is a local path and if it actually exists
+    if (coverImage && coverImage.startsWith('/')) {
+      const publicImagePath = path.join(process.cwd(), 'public', coverImage);
+      if (!fs.existsSync(publicImagePath)) {
+        console.warn(`⚠️ Local image not found: ${coverImage}. Using high-quality fallback.`);
+        coverImage = getFallbackImage(slug);
+      }
+    } else if (!coverImage) {
+      coverImage = getFallbackImage(slug);
+    }
+
     const date = metadata.date ? new Date(metadata.date) : new Date();
 
     await prisma.post.upsert({

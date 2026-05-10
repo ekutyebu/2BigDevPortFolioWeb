@@ -12,11 +12,21 @@ export default function MarkdownRenderer({ content }: { content: string }) {
   let blockKey = 0;
 
   const formatInline = (text: string) => {
-    // Basic inline formatting: **bold**, `code`, [link](url)
-    const parts = text.split(/(\*\*.*?\*\*|\[.*?\]\(.*?\)|`.*?`)/g);
+    // Basic inline formatting: **bold**, `code`, [link](url), ![alt](url)
+    const parts = text.split(/(\*\*.*?\*\*|!\[.*?\]\(.*?\)|\[.*?\]\(.*?\)|`.*?`)/g);
     return parts.map((part, i) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         return <strong key={i} className="text-white font-black">{part.slice(2, -2)}</strong>;
+      }
+      if (part.startsWith('![') && part.includes('](')) {
+        const match = part.match(/!\[(.*?)\]\((.*?)\)/);
+        if (match) {
+          return (
+            <span key={i} className="block my-8 rounded-2xl overflow-hidden shadow-2xl border border-white/5">
+              <img src={match[2]} alt={match[1]} className="w-full h-auto object-cover" />
+            </span>
+          );
+        }
       }
       if (part.startsWith('[') && part.includes('](')) {
         const match = part.match(/\[(.*?)\]\((.*?)\)/);
@@ -55,7 +65,8 @@ export default function MarkdownRenderer({ content }: { content: string }) {
         </div>
       );
     } else if (mode === 'table') {
-      const rows = buffer.filter(r => r.includes('|') && !r.replace(/\s/g, '').includes('|---|'));
+      // Filter out separator lines which consist entirely of |, -, :, and spaces.
+      const rows = buffer.filter(r => r.includes('|') && !/^[\s|:-]+$/.test(r));
       if (rows.length > 0) {
         rendered.push(
           <div key={`table-${currentKey}`} className="my-12 overflow-hidden rounded-[2rem] border border-white/5 bg-white/[0.02] shadow-2xl overflow-x-auto">
@@ -81,24 +92,28 @@ export default function MarkdownRenderer({ content }: { content: string }) {
         );
       }
     } else if (mode === 'list') {
+      const isOrdered = /^\d+\.\s+/.test(buffer[0]?.trim());
+      const ListTag = isOrdered ? 'ol' : 'ul';
       rendered.push(
-        <ul key={`list-${currentKey}`} className="space-y-4 my-10 pl-2">
+        <ListTag key={`list-${currentKey}`} className={`space-y-4 my-10 pl-2 ${isOrdered ? 'list-decimal list-inside' : ''}`}>
           {buffer.map((li, idx) => {
-            const text = li.replace(/^[-*]\s+/, '').trim();
+            const text = li.replace(/^[-*]\s+/, '').replace(/^\d+\.\s+/, '').trim();
             if (!text) return null;
             return (
-              <li key={idx} className="flex gap-5 text-muted text-lg md:text-xl leading-relaxed">
-                <div className="w-6 h-6 rounded-full bg-primary-500/10 flex items-center justify-center flex-shrink-0 mt-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary-500" />
-                </div>
+              <li key={idx} className={`text-muted text-lg md:text-xl leading-relaxed ${!isOrdered ? 'flex gap-5' : 'pl-2'}`}>
+                {!isOrdered && (
+                  <div className="w-6 h-6 rounded-full bg-primary-500/10 flex items-center justify-center flex-shrink-0 mt-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary-500" />
+                  </div>
+                )}
                 <div>{formatInline(text)}</div>
               </li>
             );
           })}
-        </ul>
+        </ListTag>
       );
     } else {
-      // Text mode can contain multiple paragraphs or headers
+      // Text mode can contain multiple paragraphs, headers, or blockquotes
       buffer.forEach((line, idx) => {
         const t = line.trim();
         if (!t) return;
@@ -109,6 +124,12 @@ export default function MarkdownRenderer({ content }: { content: string }) {
           rendered.push(<h3 key={`h3-${currentKey}-${idx}`} className="text-xl md:text-2xl font-bold mt-12 mb-6 text-primary-500 font-outfit">{formatInline(t.replace('### ', ''))}</h3>);
         } else if (t.startsWith('---')) {
           rendered.push(<hr key={`hr-${currentKey}-${idx}`} className="my-16 border-white/5" />);
+        } else if (t.startsWith('> ')) {
+          rendered.push(
+            <blockquote key={`bq-${currentKey}-${idx}`} className="border-l-4 border-accent-500 pl-6 italic my-8 text-xl text-muted">
+               {formatInline(t.replace('> ', ''))}
+            </blockquote>
+          );
         } else {
           rendered.push(
             <p key={`p-${currentKey}-${idx}`} className="text-muted/90 text-lg md:text-xl leading-[1.8] mb-8 font-medium">
@@ -139,7 +160,7 @@ export default function MarkdownRenderer({ content }: { content: string }) {
         mode = 'table';
       }
       buffer.push(line);
-    } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+    } else if (/^[-*]\s+/.test(trimmed) || /^\d+\.\s+/.test(trimmed)) {
       if (mode !== 'list') {
         flush();
         mode = 'list';
