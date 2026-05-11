@@ -30,7 +30,7 @@ export default async function Home() {
             <div className="relative">
               <div className="aspect-square rounded-3xl bg-primary-500/10 border border-primary-500/20 overflow-hidden relative group shadow-2xl shadow-primary-500/10">
                 <img 
-                  src="https://drive.google.com/uc?export=view&id=1QaxPOVJRlk248ISbd-KMW1TTa40QgxGK" 
+                  src="https://drive.google.com/thumbnail?id=1QaxPOVJRlk248ISbd-KMW1TTa40QgxGK&sz=w1000" 
                   alt="Ekuty Barnabas Ebu"
                   className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
                 />
