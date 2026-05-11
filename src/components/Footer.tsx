@@ -66,7 +66,7 @@ const Footer = () => {
             © {currentYear} 2BigDev. All rights reserved.
           </p>
           <p className="text-muted text-sm flex items-center gap-1">
-            Built with <span className="text-red-500">♥</span> using Next.js & Tailwind
+            Built with <span className="text-red-500">♥</span> using Next.js, Tailwind & Neon DB
           </p>
         </div>
       </div>

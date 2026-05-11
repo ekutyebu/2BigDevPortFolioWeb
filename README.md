@@ -5,7 +5,7 @@ A fully functional, production-ready portfolio website built with the latest Nex
 ## ✨ Features
 
 - **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS, Framer Motion.
-- **Backend**: PostgreSQL with Prisma ORM.
+- **Backend**: PostgreSQL (Neon DB) with Prisma ORM.
 - **Email Automation**: 
   - Contact form submissions saved to DB.
   - Instant email notification to you (Resend).
