@@ -45,7 +45,7 @@ export default async function Home() {
               <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-primary-500 mb-4">The Mission</h2>
               <h3 className="heading-lg font-outfit">Global Full-Stack <br />Engineer & AI Architect</h3>
               <p className="text-xl text-muted mt-8 leading-relaxed">
-                I am <span className="text-primary-500 font-bold">Basti</span>. I build high-performance, 
+                I am <span className="text-primary-500 font-bold">2BigDev</span>. I build high-performance, 
                 planet-scale digital infrastructure. My focus is on the intersection of 
                 <span className="font-bold"> Generative AI</span>, <span className="font-bold">Edge Computing</span>, 
                 and <span className="font-bold">Cloud-Native Architecture</span>.

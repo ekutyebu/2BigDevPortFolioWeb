@@ -40,7 +40,7 @@ const Hero = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-xl text-muted mb-12 max-w-2xl leading-relaxed"
           >
-            Hi, I&apos;m <span className="text-primary-500 font-bold">Basti</span>. 
+            Hi, I&apos;m <span className="text-primary-500 font-bold">2BigDev</span>. 
             A Junior Full Stack Developer with 6 live projects shipped. Specialized in 
             React, Next.js, Node.js, and Python. Ready to solve real problems.
           </motion.p>

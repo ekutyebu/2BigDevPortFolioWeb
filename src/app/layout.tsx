@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   },
   description: "Global Full-Stack Engineer specialized in High-Performance Systems, AI Integration, and Edge Computing. Engineering for a borderless digital world.",
   keywords: [
-    "Ekuty Barnabas Ebu", "Basti", "Global Full Stack Developer", "AI Architect", 
+    "Ekuty Barnabas Ebu", "2BigDev", "Global Full Stack Developer", "AI Architect", 
     "React Developer", "Next.js Expert", "Node.js Developer", "Python Engineer", 
     "Debian", "Windows Development", "Portfolio"
   ],

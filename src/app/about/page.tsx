@@ -12,7 +12,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div className="space-y-8 text-xl text-muted leading-relaxed">
             <p>
-              Hi, I&apos;m <span className="text-primary-500 font-bold">Basti</span>. I&apos;m a Junior Full Stack Developer 
+              Hi, I&apos;m <span className="text-primary-500 font-bold">2BigDev</span>. I&apos;m a Junior Full Stack Developer 
               based in Douala, Cameroon, with over a year of hands-on experience building and 
               shipping real web applications.
             </p>
