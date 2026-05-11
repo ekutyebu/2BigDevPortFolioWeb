@@ -8,6 +8,8 @@ import ShareButton from "@/components/ShareButton";
 
 import ImageWithFallback from "@/components/ImageWithFallback";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
+import BlogReactions from "@/components/BlogReactions";
+import BlogComments from "@/components/BlogComments";
 
 interface PageProps {
   params: { slug: string };
@@ -94,6 +96,11 @@ export default async function BlogPostPage({ params }: PageProps) {
           {post.title}
         </h1>
 
+        <div className="bg-primary-500/5 border border-primary-500/10 rounded-2xl p-6 mb-10 shadow-lg">
+          <p className="text-lg text-primary-500 font-bold mb-2">Do you have a question or doubt about something?</p>
+          <p className="text-muted/90">Scroll down to the bottom to ask your question, and I or anyone else will respond!</p>
+        </div>
+
         <div className="aspect-video rounded-3xl bg-primary-500/10 mb-12 overflow-hidden relative border border-white/5">
            <ImageWithFallback 
              src={post.image} 
@@ -106,6 +113,10 @@ export default async function BlogPostPage({ params }: PageProps) {
         <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-outfit prose-p:text-muted prose-p:leading-relaxed selection:bg-primary-500/30">
           <MarkdownRenderer content={post.content || ""} />
         </div>
+
+        <BlogReactions slug={decodedSlug} initialLikes={post.likes || 0} initialDislikes={post.dislikes || 0} />
+        
+        <BlogComments slug={decodedSlug} />
 
         <div className="mt-16 pt-8 border-t border-gray-200 dark:border-white/5">
           <div className="flex items-center justify-between">

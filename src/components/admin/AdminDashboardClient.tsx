@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Edit, Trash2, Save, X, Image as ImageIcon } from "lucide-react";
+import { Plus, Edit, Trash2, Save, X, Image as ImageIcon, Eye, EyeOff, MessageSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export default function AdminDashboardClient({ initialPosts, initialProjects, initialMessages }: { initialPosts: any[], initialProjects: any[], initialMessages: any[] }) {
-  const [activeTab, setActiveTab] = useState<"posts" | "projects" | "messages">("posts");
+export default function AdminDashboardClient({ initialPosts, initialProjects, initialMessages, initialComments }: { initialPosts: any[], initialProjects: any[], initialMessages: any[], initialComments: any[] }) {
+  const [activeTab, setActiveTab] = useState<"posts" | "projects" | "messages" | "comments">("posts");
   const [posts, setPosts] = useState(initialPosts);
   const [projects, setProjects] = useState(initialProjects);
   const [messages, setMessages] = useState(initialMessages);
+  const [comments, setComments] = useState(initialComments);
   const [isAdding, setIsAdding] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -71,7 +72,7 @@ export default function AdminDashboardClient({ initialPosts, initialProjects, in
   };
 
   const handleDelete = async (id: string) => {
-    let typeName = activeTab === 'posts' ? 'article' : (activeTab === 'projects' ? 'project' : 'message');
+    let typeName = activeTab === 'posts' ? 'article' : (activeTab === 'projects' ? 'project' : (activeTab === 'comments' ? 'comment' : 'message'));
     if (!confirm(`Are you sure you want to delete this ${typeName}?`)) return;
 
     try {
@@ -79,11 +80,28 @@ export default function AdminDashboardClient({ initialPosts, initialProjects, in
       if (res.ok) {
         if (activeTab === "posts") setPosts(posts.filter(p => p.id !== id));
         else if (activeTab === "projects") setProjects(projects.filter(p => p.id !== id));
+        else if (activeTab === "comments") setComments(comments.filter(c => c.id !== id));
         else setMessages(messages.filter(m => m.id !== id));
         router.refresh();
       }
     } catch (err) {
       console.error("Failed to delete", err);
+    }
+  };
+
+  const handleToggleHide = async (id: string, currentStatus: boolean) => {
+    try {
+      const res = await fetch(`/api/admin/comments/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isHidden: !currentStatus }),
+      });
+      if (res.ok) {
+        setComments(comments.map(c => c.id === id ? { ...c, isHidden: !currentStatus } : c));
+        router.refresh();
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -160,6 +178,15 @@ export default function AdminDashboardClient({ initialPosts, initialProjects, in
           Inbox
           {messages.length > 0 && (
             <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full">{messages.length}</span>
+          )}
+        </button>
+        <button
+          onClick={() => { setActiveTab("comments"); resetForm(); }}
+          className={`px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 ${activeTab === "comments" ? "bg-primary-500 text-white shadow-lg shadow-primary-500/25" : "text-muted hover:text-primary-500"}`}
+        >
+          Comments
+          {comments.filter(c => !c.isHidden).length > 0 && (
+            <span className="bg-primary-500 text-black text-[10px] px-2 py-0.5 rounded-full">{comments.filter(c => !c.isHidden).length}</span>
           )}
         </button>
       </div>
@@ -353,6 +380,42 @@ export default function AdminDashboardClient({ initialPosts, initialProjects, in
                 </div>
                 <div className="bg-black/20 p-6 rounded-2xl border border-white/5 mt-2">
                   <p className="text-muted leading-relaxed whitespace-pre-wrap">{msg.message}</p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      ) : activeTab === "comments" ? (
+        <div className="grid grid-cols-1 gap-6">
+          <h2 className="text-2xl font-bold font-outfit">Article Comments ({comments.length})</h2>
+          {comments.length === 0 ? (
+            <div className="glass p-8 text-center text-muted rounded-3xl">No comments yet.</div>
+          ) : (
+            comments.map((comment: any) => (
+              <div key={comment.id} className={`glass p-8 rounded-3xl flex flex-col gap-4 group transition-all ${comment.isHidden ? 'opacity-50 grayscale' : ''}`}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <MessageSquare size={16} className="text-primary-500" />
+                      <h3 className="font-bold text-lg">{comment.author}</h3>
+                      {comment.isHidden && <span className="bg-red-500/20 text-red-500 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Hidden</span>}
+                    </div>
+                    <p className="text-xs text-muted mt-1">on <span className="text-primary-500 font-bold">{comment.post?.title}</span></p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted font-mono bg-white/5 px-3 py-1 rounded-full mr-2">
+                      {new Date(comment.createdAt).toLocaleString()}
+                    </span>
+                    <button onClick={() => handleToggleHide(comment.id, comment.isHidden)} className="p-2 rounded-xl text-muted hover:text-primary-500 hover:bg-primary-500/10 transition-all" title={comment.isHidden ? "Unhide Comment" : "Hide Comment"}>
+                      {comment.isHidden ? <Eye size={18} /> : <EyeOff size={18} />}
+                    </button>
+                    <button onClick={() => handleDelete(comment.id)} className="p-2 rounded-xl text-muted hover:text-red-500 hover:bg-red-500/10 transition-all" title="Delete Comment">
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+                <div className="bg-black/20 p-6 rounded-2xl border border-white/5 mt-2">
+                  <p className="text-muted leading-relaxed whitespace-pre-wrap">{comment.text}</p>
                 </div>
               </div>
             ))
