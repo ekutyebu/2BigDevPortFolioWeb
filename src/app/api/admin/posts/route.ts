@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { submitToIndexNow } from "@/lib/indexnow";
+import { revalidatePath } from "next/cache";
 
 export async function POST(req: Request) {
   const cookieStore = cookies();
@@ -23,7 +24,10 @@ export async function POST(req: Request) {
       },
     });
 
+    // Clear cache
+    revalidatePath("/blog");
     if (post.published) {
+      revalidatePath(`/blog/${post.slug}`);
       const host = req.headers.get("host") || "2bigdev.vercel.app";
       const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
       const url = `${protocol}://${host}/blog/${post.slug}`;

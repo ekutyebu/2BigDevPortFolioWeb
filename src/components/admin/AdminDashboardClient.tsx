@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Edit, Trash2, Save, X, Image as ImageIcon, Eye, EyeOff, MessageSquare } from "lucide-react";
+import { Plus, Edit, Trash2, Save, X, Image as ImageIcon, Eye, EyeOff, MessageSquare, Settings, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function AdminDashboardClient({ initialPosts, initialProjects, initialMessages, initialComments }: { initialPosts: any[], initialProjects: any[], initialMessages: any[], initialComments: any[] }) {
-  const [activeTab, setActiveTab] = useState<"posts" | "projects" | "messages" | "comments">("posts");
+  const [activeTab, setActiveTab] = useState<"posts" | "projects" | "messages" | "comments" | "settings">("posts");
   const [posts, setPosts] = useState(initialPosts);
   const [projects, setProjects] = useState(initialProjects);
   const [messages, setMessages] = useState(initialMessages);
@@ -18,14 +18,44 @@ export default function AdminDashboardClient({ initialPosts, initialProjects, in
   // Form States
   const [postData, setPostData] = useState({ title: "", slug: "", content: "", image: "", published: true });
   const [projectData, setProjectData] = useState({ title: "", description: "", image: "", tags: "", link: "", github: "", order: 0 });
+  const [newPassword, setNewPassword] = useState("");
+  const [passStatus, setPassStatus] = useState({ msg: "", type: "" });
   const [isPreview, setIsPreview] = useState(false);
 
   const resetForm = () => {
     setPostData({ title: "", slug: "", content: "", image: "", published: true });
     setProjectData({ title: "", description: "", image: "", tags: "", link: "", github: "", order: 0 });
+    setNewPassword("");
+    setPassStatus({ msg: "", type: "" });
     setIsAdding(false);
     setEditingItem(null);
     setIsPreview(false);
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setPassStatus({ msg: "Updating...", type: "info" });
+
+    try {
+      const res = await fetch("/api/admin/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newPassword }),
+      });
+
+      if (res.ok) {
+        setPassStatus({ msg: "Password updated successfully!", type: "success" });
+        setNewPassword("");
+      } else {
+        const data = await res.json();
+        setPassStatus({ msg: data.error || "Failed to update", type: "error" });
+      }
+    } catch (err) {
+      setPassStatus({ msg: "Server error", type: "error" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleTitleChange = (val: string) => {
@@ -189,10 +219,58 @@ export default function AdminDashboardClient({ initialPosts, initialProjects, in
             <span className="bg-primary-500 text-black text-[10px] px-2 py-0.5 rounded-full">{comments.filter(c => !c.isHidden).length}</span>
           )}
         </button>
+        <button
+          onClick={() => { setActiveTab("settings"); resetForm(); }}
+          className={`px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 ${activeTab === "settings" ? "bg-primary-500 text-white shadow-lg shadow-primary-500/25" : "text-muted hover:text-primary-500"}`}
+        >
+          <Settings size={18} />
+          Settings
+        </button>
       </div>
 
       {/* Form Area */}
-      {activeTab !== "messages" && (
+      {activeTab === "settings" ? (
+        <div className="glass p-12 rounded-3xl max-w-xl mx-auto border border-primary-500/20">
+          <div className="flex flex-col items-center text-center mb-10">
+            <div className="w-16 h-16 bg-primary-500/10 rounded-2xl flex items-center justify-center text-primary-500 mb-6">
+              <Lock size={32} />
+            </div>
+            <h2 className="text-3xl font-bold font-outfit">Security Settings</h2>
+            <p className="text-muted mt-2">Update your administrator password</p>
+          </div>
+
+          <form onSubmit={handlePasswordChange} className="space-y-6">
+            <div>
+              <label className="block text-sm font-bold mb-2 uppercase tracking-wide">New Password</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full px-5 py-4 rounded-xl bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 focus:border-primary-500 outline-none transition-all"
+                placeholder="Enter new password"
+                required
+              />
+            </div>
+
+            {passStatus.msg && (
+              <div className={`p-4 rounded-xl text-sm font-bold text-center ${
+                passStatus.type === "success" ? "bg-green-500/10 text-green-500" : 
+                passStatus.type === "error" ? "bg-red-500/10 text-red-500" : "bg-primary-500/10 text-primary-500"
+              }`}>
+                {passStatus.msg}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-primary-500/25"
+            >
+              {loading ? "Updating..." : "Update Password"}
+            </button>
+          </form>
+        </div>
+      ) : activeTab !== "messages" && (
         isAdding ? (
           <div className="glass p-8 rounded-3xl border border-primary-500/30">
           <div className="flex justify-between items-center mb-8">

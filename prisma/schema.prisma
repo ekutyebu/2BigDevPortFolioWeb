@@ -60,3 +60,8 @@ model Skill {
   icon      String?
   createdAt DateTime @default(now())
 }
+
+model Admin {
+  id       String @id @default(cuid())
+  password String
+}
