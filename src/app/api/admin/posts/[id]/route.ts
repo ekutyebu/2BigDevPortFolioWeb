@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { submitToIndexNow } from "@/lib/indexnow";
 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   const cookieStore = cookies();
@@ -20,6 +21,13 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         published: data.published,
       },
     });
+
+    if (post.published) {
+      const host = req.headers.get("host") || "2bigdev.vercel.app";
+      const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+      const url = `${protocol}://${host}/blog/${post.slug}`;
+      submitToIndexNow(host, url);
+    }
 
     return NextResponse.json(post);
   } catch (error) {
