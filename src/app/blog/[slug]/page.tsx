@@ -110,7 +110,7 @@ export default async function BlogPostPage({ params }: PageProps) {
            />
         </div>
 
-        <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-outfit prose-p:text-muted prose-p:leading-relaxed selection:bg-primary-500/30">
+        <div className="max-w-none selection:bg-primary-500/30">
           <MarkdownRenderer content={post.content || ""} />
         </div>
 

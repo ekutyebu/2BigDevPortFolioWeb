@@ -7,8 +7,14 @@ import CopyButton from './CopyButton';
 export default function MarkdownRenderer({ content }: { content: string }) {
   if (!content) return <p className="text-muted italic">This post has no content yet.</p>;
 
+  // Pre-process content to fix potential rendering issues with unclosed tags
+  // or stray characters that rehype-raw might misinterpret.
+  const safeContent = content
+    .replace(/<(?![a-zA-Z/!])/g, '&lt;') // Escape '<' if not followed by tag-like chars
+    .replace(/(?<![a-zA-Z0-9"'>])>/g, '&gt;'); // Escape '>' if stray
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 break-words overflow-visible">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
@@ -84,7 +90,7 @@ export default function MarkdownRenderer({ content }: { content: string }) {
           td: ({node, ...props}) => <td className="p-6 text-muted/80 font-medium" {...props} />,
         }}
       >
-        {content}
+        {safeContent}
       </ReactMarkdown>
     </div>
   );

@@ -59,19 +59,24 @@ export default async function BlogPage() {
                   {post.title}
                 </h2>
                 <p className="text-muted line-clamp-3 mb-6">
-                  {post.content
-                    .replace(/^#+\s+/gm, '')
-                    .replace(/\*\*/g, '')
-                    .replace(/\*/g, '')
-                    .replace(/__/g, '')
-                    .replace(/`/g, '')
-                    .replace(/^>\s+/gm, '')
-                    .replace(/\[(.*?)\]\(.*?\)/g, '$1')
-                    .replace(/!\[(.*?)\]\(.*?\)/g, '')
-                    .replace(/<[^>]*>/g, '')
-                    .replace(/\s+/g, ' ')
-                    .trim()
-                    .substring(0, 160)}...
+                  {(() => {
+                    const cleanText = post.content
+                      .replace(/^#+\s+/gm, '') // Remove headers
+                      .replace(/!\[.*?\]\(.*?\)/g, '') // Remove images
+                      .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Keep link text
+                      .replace(/(\*\*|__)(.*?)\1/g, '$2') // Remove bold
+                      .replace(/(\*|_)(.*?)\1/g, '$2') // Remove italics
+                      .replace(/```[\s\S]*?```/g, '') // Remove code blocks
+                      .replace(/`(.+?)`/g, '$1') // Remove inline code
+                      .replace(/>\s+/gm, '') // Remove blockquotes
+                      .replace(/<[^>]*>/g, '') // Remove HTML tags
+                      .replace(/\s+/g, ' ') // Normalize spaces
+                      .trim();
+                    
+                    return cleanText.length > 0 
+                      ? cleanText.substring(0, 160) + "..."
+                      : "Click to read the full article and explore more insights...";
+                  })()}
                 </p>
                 <div className="flex items-center gap-2 font-bold text-primary-500">
                   Read More <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
