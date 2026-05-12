@@ -47,13 +47,21 @@ export default async function BlogPage() {
                     <div className="absolute inset-0 bg-gradient-to-br from-primary-500/20 to-accent-500/20 group-hover:scale-110 transition-transform duration-700" />
                   )}
                 </div>
-                <div className="flex items-center gap-4 text-sm text-primary-500 font-bold uppercase tracking-widest mb-4">
-                  <Calendar size={14} />
-                  {new Date(post.createdAt).toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+                <div className="flex flex-wrap items-center gap-4 text-sm text-primary-500 font-bold uppercase tracking-widest mb-4">
+                  <div className="flex items-center gap-1.5">
+                    <Calendar size={14} />
+                    {new Date(post.createdAt).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </div>
+                  {post.updatedAt && new Date(post.updatedAt).getTime() - new Date(post.createdAt).getTime() > 1000 * 60 * 60 && (
+                    <>
+                      <span className="w-1 h-1 rounded-full bg-gray-300" />
+                      <span className="bg-primary-500/10 px-2 py-0.5 rounded text-[10px] tracking-tight">Updated</span>
+                    </>
+                  )}
                 </div>
                 <h2 className="text-2xl font-bold font-outfit group-hover:text-primary-500 transition-colors mb-4">
                   {post.title}

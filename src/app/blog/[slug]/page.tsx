@@ -85,11 +85,21 @@ export default async function BlogPostPage({ params }: PageProps) {
           <ChevronLeft size={20} /> Back to Blog
         </Link>
         
-        <div className="flex items-center gap-4 text-sm text-muted font-medium mb-6">
-          <Calendar size={16} />
-          {formattedDate}
+        <div className="flex flex-wrap items-center gap-4 text-sm text-muted font-medium mb-6">
+          <div className="flex items-center gap-1.5">
+            <Calendar size={14} className="text-primary-500" />
+            {formattedDate}
+          </div>
           <span className="w-1 h-1 rounded-full bg-gray-300" />
           <span>{post.content ? Math.ceil(post.content.split(' ').length / 200) : 5} min read</span>
+          {post.updatedAt && new Date(post.updatedAt).getTime() - new Date(post.createdAt).getTime() > 1000 * 60 * 60 && (
+            <>
+              <span className="w-1 h-1 rounded-full bg-gray-300" />
+              <span className="bg-primary-500/10 text-primary-500 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
+                Updated: {new Date(post.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              </span>
+            </>
+          )}
         </div>
 
         <h1 className="text-4xl md:text-5xl font-bold font-outfit leading-tight mb-8">
